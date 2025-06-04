@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 from db.base import Base
+from sqlalchemy import Column, DateTime, func
 
 class User(Base):
     __tablename__ = "users"
@@ -9,3 +10,5 @@ class User(Base):
     full_name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

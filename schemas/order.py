@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 class OrderBase(BaseModel):
     product_id: int
     quantity: int
-    order_date: datetime
+    price: float
 
 class OrderCreate(OrderBase):
     pass

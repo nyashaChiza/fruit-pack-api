@@ -3,11 +3,17 @@ from schemas.supplier import SupplierCreate, SupplierUpdate, Supplier
 from db.models.supplier import Supplier as SupplierModel
 from db.session import get_db
 from sqlalchemy.orm import Session
+from core.auth import get_current_user
+from db.models.user import User  # Assuming you have a User model
 
 router = APIRouter()
 
 @router.post("/", response_model=Supplier)
-def create_supplier(supplier: SupplierCreate, db: Session = Depends(get_db)):
+def create_supplier(
+    supplier: SupplierCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     db_supplier = SupplierModel(**supplier.dict())
     db.add(db_supplier)
     db.commit()
@@ -15,14 +21,23 @@ def create_supplier(supplier: SupplierCreate, db: Session = Depends(get_db)):
     return db_supplier
 
 @router.get("/{supplier_id}", response_model=Supplier)
-def read_supplier(supplier_id: int, db: Session = Depends(get_db)):
+def read_supplier(
+    supplier_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     supplier = db.query(SupplierModel).filter(SupplierModel.id == supplier_id).first()
     if supplier is None:
         raise HTTPException(status_code=404, detail="Supplier not found")
     return supplier
 
 @router.put("/{supplier_id}", response_model=Supplier)
-def update_supplier(supplier_id: int, supplier: SupplierUpdate, db: Session = Depends(get_db)):
+def update_supplier(
+    supplier_id: int,
+    supplier: SupplierUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     db_supplier = db.query(SupplierModel).filter(SupplierModel.id == supplier_id).first()
     if db_supplier is None:
         raise HTTPException(status_code=404, detail="Supplier not found")
@@ -33,7 +48,11 @@ def update_supplier(supplier_id: int, supplier: SupplierUpdate, db: Session = De
     return db_supplier
 
 @router.delete("/{supplier_id}", response_model=dict)
-def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
+def delete_supplier(
+    supplier_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     db_supplier = db.query(SupplierModel).filter(SupplierModel.id == supplier_id).first()
     if db_supplier is None:
         raise HTTPException(status_code=404, detail="Supplier not found")

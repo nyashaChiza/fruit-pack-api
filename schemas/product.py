@@ -4,6 +4,7 @@ from typing import Optional
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
+    supplier_id: int
     price: float
     stock: int
 

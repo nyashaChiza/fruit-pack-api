@@ -12,6 +12,7 @@ class Product(Base):
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
     supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=False)
+    # image = Column(String, nullable=True)  # <-- Add this line for product image URL or path
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -2,8 +2,25 @@ from fastapi import FastAPI
 from api.endpoints import orders, suppliers, users, product, auth
 from db.base import Base
 from db.session import engine
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:8081",  # Expo/React Native web
+    "http://localhost:3000",  # If you're also using React web
+    "https://studio.expo.dev",  # Expo preview environment
+    "https://fruit-pack-api.onrender.com",  # If needed (not necessary for your own domain)
+    "*"  # Use only for testing — restrict in production!
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(orders.router, prefix="/orders", tags=["orders"])
 app.include_router(suppliers.router, prefix="/suppliers", tags=["suppliers"])

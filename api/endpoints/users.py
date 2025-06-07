@@ -72,3 +72,13 @@ def delete_user(
     db.delete(db_user)
     db.commit()
     return {"detail": "User deleted"}
+
+@router.get("/users/", response_model=list[UserRead])
+def read_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    users = db.query(User).offset(skip).limit(limit).all()
+    return users

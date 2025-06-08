@@ -12,10 +12,11 @@ class Product(Base):
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
     supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=False)
-    # image = Column(String, nullable=True)  # <-- Add this line for product image URL or path
+    category_id = Column(Integer, ForeignKey('Categories.id'))
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # This line is needed if you want to access all orders for a product
     orders = relationship("Order", back_populates="product")
     supplier = relationship("Supplier", back_populates="products")
+    category = relationship("Category", back_populates="products")

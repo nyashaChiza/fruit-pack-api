@@ -2,3 +2,5 @@
 from .order import *
 from .supplier import *
 from .user import *
+from .product import *
+from .category import *

@@ -2,3 +2,5 @@
 from .order import Order
 from .supplier import Supplier
 from .user import User
+from .product import Product
+from .category import Category

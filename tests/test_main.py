@@ -13,15 +13,15 @@ def test_users_router():
     assert response.status_code in (200, 401, 403, 404)  # Depending on auth
 
 def test_auth_router():
-    response = client.post("/auth/login/", json={"username": "test", "password": "test"})
+    response = client.post("/auth/token", json={"username": "test", "password": "test"})
     assert response.status_code in (200, 401, 422)
 
 def test_suppliers_router():
-    response = client.get("/suppliers/")
+    response = client.get("/suppliers/1/")
     assert response.status_code in (200, 401, 403, 404)
 
 def test_categories_router():
-    response = client.get("/categories/")
+    response = client.get("/categories/1/")
     assert response.status_code in (200, 401, 403, 404)
 
 def test_products_router():
@@ -29,5 +29,5 @@ def test_products_router():
     assert response.status_code in (200, 401, 403, 404)
 
 def test_orders_router():
-    response = client.get("/orders/")
+    response = client.get("/orders/1/")
     assert response.status_code in (200, 401, 403, 404)

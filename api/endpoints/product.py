@@ -1,21 +1,48 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+from fastapi.responses import FileResponse
+import os
 from sqlalchemy.orm import Session
 from db.models.product import Product
 from db.session import get_db
 from schemas.product import ProductCreate, ProductUpdate, ProductRead
-from typing import List
+from typing import List, Optional
 from core.auth import get_current_user
 from db.models.user import User  # Assuming you have a User model
 
 router = APIRouter()
+IMAGE_DIR = "static/images"
+
 
 @router.post("/", response_model=ProductRead)
-def create_product(
-    product: ProductCreate,
+async def create_product(
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    supplier_id: int = Form(...),
+    category_id: Optional[int] = Form(None),
+    price: float = Form(...),
+    stock: int = Form(...),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    db_product = Product(**product.dict())
+    image_filename = None
+    if image:
+        os.makedirs(IMAGE_DIR, exist_ok=True)
+        image_filename = f"{name}_{image.filename}"
+        image_path = os.path.join(IMAGE_DIR, image_filename)
+        with open(image_path, "wb") as buffer:
+            buffer.write(await image.read())
+
+    product_data = {
+        "name": name,
+        "description": description,
+        "supplier_id": supplier_id,
+        "category_id": category_id,
+        "price": price,
+        "stock": stock,
+        "image": image_filename
+    }
+    db_product = Product(**product_data)
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
@@ -69,3 +96,11 @@ def delete_product(
     db.delete(db_product)
     db.commit()
     return {"detail": "Product deleted"}
+
+
+@router.get("/images/{image_filename}")
+def get_image(image_filename: str):
+    image_path = os.path.join(IMAGE_DIR, image_filename)
+    if not os.path.exists(image_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(image_path)

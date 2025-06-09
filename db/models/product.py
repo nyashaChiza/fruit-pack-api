@@ -15,6 +15,7 @@ class Product(Base):
     category_id = Column(Integer, ForeignKey('Categories.id'))
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    image = Column(String, nullable=True)  # Stores image filename or path
 
     # This line is needed if you want to access all orders for a product
     orders = relationship("Order", back_populates="product")

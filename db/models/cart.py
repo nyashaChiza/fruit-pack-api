@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, func
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, func, String
 from sqlalchemy.orm import relationship
 from db.base import Base
 
@@ -10,6 +10,7 @@ class Cart(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False, default=1)
     price = Column(Integer, nullable=False)  # Store price at the time of adding to cart
+    status = Column(String, nullable=False, default="Pending" )  # e.g., "active", "purchased", "removed"
     created = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product")

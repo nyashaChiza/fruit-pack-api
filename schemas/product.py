@@ -5,6 +5,7 @@ class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
     supplier_id: int
+    image: Optional[str] = None  # Stores image filename or path
     category_id: Optional[int] = None
     price: float
     stock: int

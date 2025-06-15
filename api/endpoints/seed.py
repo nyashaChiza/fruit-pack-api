@@ -8,6 +8,7 @@ from core.auth import get_current_user
 from db.models.user import User
 import os
 import random
+import shutil
 
 router = APIRouter()
 
@@ -53,10 +54,24 @@ def seed_data(
     supplier_objs = db.query(Supplier).all()
 
     # Get images from assets/images
-    image_dir = "assets/images"
-    image_files = [f for f in os.listdir(image_dir) if os.path.isfile(os.path.join(image_dir, f))]
-    def random_image():
-        return os.path.join(image_dir, random.choice(image_files)) if image_files else None
+    assets_dir = "assets/images"
+    static_dir = "static/images"
+    os.makedirs(static_dir, exist_ok=True)
+    image_files = [f for f in os.listdir(assets_dir) if os.path.isfile(os.path.join(assets_dir, f))]
+
+    def assign_image(product_name):
+        if not image_files:
+            return None
+        chosen = random.choice(image_files)
+        ext = os.path.splitext(chosen)[1]
+        safe_name = product_name.replace(" ", "_")
+        new_filename = f"{safe_name}_{chosen}"
+        src_path = os.path.join(assets_dir, chosen)
+        dst_path = os.path.join(static_dir, new_filename)
+        # Copy only if not already present
+        if not os.path.exists(dst_path):
+            shutil.copyfile(src_path, dst_path)
+        return f"{new_filename}"
 
     # Seed products
     products = [
@@ -67,7 +82,7 @@ def seed_data(
             stock=100,
             supplier_id=supplier_objs[0].id,
             category_id=category_objs[0].id,
-            image=random_image()
+            image=assign_image("Orange")
         ),
         Product(
             name="Strawberry",
@@ -76,7 +91,7 @@ def seed_data(
             stock=50,
             supplier_id=supplier_objs[1].id,
             category_id=category_objs[1].id,
-            image=random_image()
+            image=assign_image("Strawberry")
         ),
         Product(
             name="Mango",
@@ -85,7 +100,7 @@ def seed_data(
             stock=80,
             supplier_id=supplier_objs[2].id,
             category_id=category_objs[2].id,
-            image=random_image()
+            image=assign_image("Mango")
         ),
         Product(
             name="Peach",
@@ -94,7 +109,7 @@ def seed_data(
             stock=60,
             supplier_id=supplier_objs[0].id,
             category_id=category_objs[3].id,
-            image=random_image()
+            image=assign_image("Peach")
         ),
         Product(
             name="Watermelon",
@@ -103,7 +118,7 @@ def seed_data(
             stock=40,
             supplier_id=supplier_objs[1].id,
             category_id=category_objs[4].id,
-            image=random_image()
+            image=assign_image("Watermelon")
         ),
         Product(
             name="Green Apple",
@@ -112,7 +127,7 @@ def seed_data(
             stock=90,
             supplier_id=supplier_objs[2].id,
             category_id=category_objs[5].id,
-            image=random_image()
+            image=assign_image("Green Apple")
         ),
         Product(
             name="Kiwi",
@@ -121,7 +136,7 @@ def seed_data(
             stock=70,
             supplier_id=supplier_objs[0].id,
             category_id=category_objs[6].id,
-            image=random_image()
+            image=assign_image("Kiwi")
         ),
     ]
     db.add_all(products)

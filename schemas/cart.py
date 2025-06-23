@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class CartBase(BaseModel):
     product_id: int
@@ -20,3 +21,12 @@ class CartResponse(CartBase):
 
     class Config:
         orm_mode = True
+
+class CartItem(BaseModel):
+    id: int
+    name: str
+    price: float  # price per item
+    quantity: int
+
+class CheckoutRequest(BaseModel):
+    items: List[CartItem]

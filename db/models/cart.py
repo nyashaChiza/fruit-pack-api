@@ -15,3 +15,5 @@ class Cart(Base):
 
     product = relationship("Product")
     user = relationship("User")
+
+

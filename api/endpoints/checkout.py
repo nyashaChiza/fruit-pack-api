@@ -9,7 +9,7 @@ from decouple import config
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-stripe.api_key = config("STRIPE_SECRET_KEY")
+stripe.api_key = config("STRIPE_SECRET_KEY", "mvjgcxhfxch,cxhf")
 
 @router.post("/checkout")
 async def create_checkout(request: CheckoutRequest, token: str = Depends(oauth2_scheme), current_user=Depends(get_current_user)):

@@ -1,70 +1,40 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 from db.session import get_db
 from db.models import Cart, Product
-from schemas import CartCreate, CartResponse, CartUpdate
-from core.auth import get_current_user # your auth dependency
+from core.auth import get_current_user
+from core.config import settings  # contains STRIPE_SECRET_KEY
+import stripe
 
-router = APIRouter(prefix="/cart", tags=["Cart"])
+router = APIRouter(prefix="/checkout", tags=["Checkout"])
 
-@router.get("/", response_model=List[CartResponse])
-def get_cart_items(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    items = db.query(Cart).filter(Cart.user_id == current_user.id).all()
-    return items
+stripe.api_key = settings.STRIPE_SECRET_KEY  # Your secret Stripe key
 
-@router.post("/", response_model=CartResponse)
-def add_cart_item(item_in: CartCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    product = db.query(Product).filter(Product.id == item_in.product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+@router.post("/")
+def create_checkout_session(db: Session = Depends(get_db)):
+    cart_items = db.query(Cart).filter(Cart.user_id == current_user.id).all()
 
-    cart_item = db.query(Cart).filter(
-        Cart.user_id == current_user.id, Cart.product_id == item_in.product_id
-    ).first()
+    if not cart_items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
 
-    # if cart_item:
-    #     cart_item.quantity += item_in.quantity
-    #     # Optionally: Do NOT update price here to preserve original cart state
-    # else:
-    cart_item = Cart(
-            user_id=current_user.id,
-            product_id=item_in.product_id,
-            quantity=item_in.quantity,
-            price=product.price  # Capture snapshot
+    total_amount = 0
+    for item in cart_items:
+        total_amount += item.price * item.quantity
+
+    amount_cents = int(total_amount * 100)  # Stripe expects amount in cents
+
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            metadata={"user_id": current_user.id},
         )
-        
-    db.add(cart_item)
 
-    db.commit()
-    db.refresh(cart_item)
-    return cart_item
+        return {
+            "client_secret": intent.client_secret,
+            "amount": total_amount,
+            "currency": "usd"
+        }
 
-
-@router.put("/{item_id}", response_model=CartResponse)
-def update_cart_item(item_id: int, item_in: CartUpdate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    cart_item = db.query(Cart).filter(
-        Cart.id == item_id,
-        Cart.user_id == current_user.id
-    ).first()
-
-    if not cart_item:
-        raise HTTPException(status_code=404, detail="Cart item not found")
-
-    # cart_item.quantity = item_in.quantity
-    db.commit()
-    db.refresh(cart_item)
-    return cart_item
-
-@router.delete("/{item_id}", status_code=204)
-def delete_cart_item(item_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    cart_item = db.query(Cart).filter(
-        Cart.id == item_id,
-        Cart.user_id == current_user.id
-    ).first()
-
-    if not cart_item:
-        raise HTTPException(status_code=404, detail="Cart item not found")
-
-    db.delete(cart_item)
-    db.commit()
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")

@@ -7,7 +7,8 @@ from core.config import settings  # contains STRIPE_SECRET_KEY
 import stripe
 
 router = APIRouter(prefix="/checkout", tags=["Checkout"])
-
+ 
+current_user = get_current_user()
 stripe.api_key = settings.STRIPE_SECRET_KEY  # Your secret Stripe key
 
 @router.post("/")

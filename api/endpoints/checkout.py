@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 import stripe
+from core.auth import get_current_user
 from schemas.cart import CheckoutRequest
 from decouple import config
 
@@ -11,7 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 stripe.api_key = config("STRIPE_SECRET_KEY")
 
 @router.post("/checkout")
-async def create_checkout(request: CheckoutRequest, token: str = Depends(oauth2_scheme)):
+async def create_checkout(request: CheckoutRequest, token: str = Depends(oauth2_scheme), current_user=Depends(get_current_user)):
     try:
         # Calculate total amount in cents
         total_amount = sum(item.price * item.quantity for item in request.items)

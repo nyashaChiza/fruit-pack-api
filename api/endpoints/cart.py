@@ -59,8 +59,8 @@ def create_checkout_session(
         return {
             "client_secret": intent.client_secret,
             "amount": total_amount,
-            "currency": "usd",
-            "order_id": order.id
+            "currency": "zar",
+            "order_id": order.id,
         }
 
     except stripe.error.StripeError as e:

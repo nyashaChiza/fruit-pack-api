@@ -1,1 +1,3 @@
 SECRET_KEY = kjhxtfggsztxcvvgctdctzrszrsxcvjjjgvg
+STRIPE_SECRET_KEY = d;khskodsoondsd
+STRIPE_WEBHOOK_SECRET = wdfrhjc_1234567890abcdef12345678

@@ -24,7 +24,7 @@ app.include_router(product.router, prefix="/products", tags=["products"])
 app.include_router(orders.router, prefix="/orders", tags=["orders"])
 app.include_router(cart.router, prefix="/cart", tags=["cart"])
 app.include_router(seed.router, prefix="/seed", tags=["seed"])
-app.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
+# app.include_router(checkout.router, prefix="/checkout", tags=["checkout"])
 
 
 @app.get("/")

@@ -67,15 +67,7 @@ def create_checkout_session(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
 
-from fastapi import APIRouter, Request, HTTPException
-import stripe
-from db.session import get_db
-from sqlalchemy.orm import Session
-from db.models import Order
-from core.config import settings
 
-router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
 @router.post("/stripe")
 async def stripe_webhook(request: Request, db: Session = Depends(get_db)):

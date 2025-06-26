@@ -28,5 +28,13 @@ class CartItem(BaseModel):
     price: float  # price per item
     quantity: int
 
+
+class CheckoutItem(BaseModel):
+    product_id: int
+    name: str
+    price: float
+    quantity: int
+
 class CheckoutRequest(BaseModel):
-    items: List[CartItem]
+    items: List[CheckoutItem]
+

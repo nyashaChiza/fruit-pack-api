@@ -18,6 +18,6 @@ class Product(Base):
     image = Column(String, nullable=True)  # Stores image filename or path
 
     # This line is needed if you want to access all orders for a product
-    orders = relationship("Order", back_populates="product")
+    order_items = relationship("OrderItem", back_populates="product")
     supplier = relationship("Supplier", back_populates="products")
     category = relationship("Category", back_populates="products")

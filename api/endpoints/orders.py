@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from schemas.order import OrderCreate, OrderUpdate, OrderResponse
-from db.models.order import Order
+from db.models.order import Order, OrderItem
 from db.session import get_db
 from sqlalchemy.orm import Session
 from db.models.product import Product as ProductModel
 from core.auth import get_current_user
-from db.models.user import User  # Assuming you have a User model
+from db.models.user import User
 
-router = APIRouter()
+router = APIRouter(prefix="/orders", tags=["Orders"])
 
 @router.post("/", response_model=OrderResponse)
 def create_order(
@@ -16,8 +16,27 @@ def create_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    db_order = Order(**order.dict())
+    db_order = Order(
+        user_id=current_user.id,
+        status="pending"
+    )
     db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+
+    for item in order.items:
+        product = db.query(ProductModel).filter(ProductModel.id == item.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
+
+        order_item = OrderItem(
+            order_id=db_order.id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price=product.price
+        )
+        db.add(order_item)
+
     db.commit()
     db.refresh(db_order)
     return db_order
@@ -28,8 +47,8 @@ def read_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if order is None:
+    order = db.query(Order).filter(Order.id == order_id, Order.user_id == current_user.id).first()
+    if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
 
@@ -40,9 +59,10 @@ def update_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    db_order = db.query(Order).filter(Order.id == order_id).first()
-    if db_order is None:
+    db_order = db.query(Order).filter(Order.id == order_id, Order.user_id == current_user.id).first()
+    if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
+
     for key, value in order.dict(exclude_unset=True).items():
         setattr(db_order, key, value)
     db.commit()
@@ -55,29 +75,36 @@ def delete_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    db_order = db.query(Order).filter(Order.id == order_id).first()
-    if db_order is None:
+    db_order = db.query(Order).filter(Order.id == order_id, Order.user_id == current_user.id).first()
+    if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
     db.delete(db_order)
     db.commit()
     return {"detail": "Order deleted successfully"}
 
-@router.get("/{order_id}", response_model=OrderResponse)
-def get_order(
+@router.get("/", response_model=List[OrderResponse])
+def list_orders(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    orders = db.query(Order).filter(Order.user_id == current_user.id).all()
+    return orders
+
+@router.get("/{order_id}/items")
+def get_order_items(
     order_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    order = db.query(Order).filter(Order.id == order_id).first()
+    order = db.query(Order).filter(Order.id == order_id, Order.user_id == current_user.id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
-    product = db.query(ProductModel).filter(ProductModel.id == order.product_id).first()
-    return OrderResponse(
-        id=order.id,
-        product_id=order.product_id,
-        quantity=order.quantity,
-        order_date=order.order_date,
-        status=order.status,
-        product_name=product.name if product else None
-    )
+    items = db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
+    return [
+        {
+            "product_id": item.product_id,
+            "quantity": item.quantity,
+            "price": item.price
+        }
+        for item in items
+    ]

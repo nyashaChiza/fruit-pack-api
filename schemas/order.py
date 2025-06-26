@@ -1,44 +1,37 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
 
-# Assuming these are defined somewhere
-# from .models import Order as OrderModel, Product as ProductModel
-# from .database import get_db
-
-class OrderBase(BaseModel):
+class OrderItemBase(BaseModel):
     product_id: int
     quantity: int
-    price: float
+    price: float  # Capture price at time of order
 
-class OrderCreate(OrderBase):
+class OrderItemCreate(OrderItemBase):
     pass
 
-class OrderUpdate(OrderBase):
-    status: Optional[str] = None
-
-class Order(OrderBase):
+class OrderItemResponse(OrderItemBase):
     id: int
-    status: str
+    order_id: int
 
     class Config:
         orm_mode = True
 
+class OrderBase(BaseModel):
+    status: Optional[str] = "pending"
+
+class OrderCreate(OrderBase):
+    items: List[OrderItemCreate]
+
+class OrderUpdate(BaseModel):
+    status: Optional[str] = None
+
 class OrderResponse(OrderBase):
-    product_name: Optional[str] = None
-
-
-class SupplierBase(BaseModel):
-    name: str
-    contact_info: Optional[str] = None
-
-class SupplierCreate(SupplierBase):
-    pass
-
-class Supplier(SupplierBase):
     id: int
+    user_id: int
+    created: datetime
+    updated: datetime
+    items: Optional[List[OrderItemResponse]] = []
 
     class Config:
         orm_mode = True

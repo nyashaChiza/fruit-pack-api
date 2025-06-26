@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from db.models.product import Product as ProductModel
 from core.auth import get_current_user
 from db.models.user import User
+from fastapi import Body
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -108,3 +109,46 @@ def get_order_items(
         }
         for item in items
     ]
+
+
+
+@router.put("/{order_id}/status", response_model=OrderResponse)
+def update_order_status(
+    order_id: int,
+    status_data: OrderUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_order = db.query(Order).filter(Order.id == order_id).first()
+    
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Optional: Add role check if needed (e.g. if only supplier can update certain statuses)
+
+    if status_data.status:
+        db_order.status = status_data.status
+        db.commit()
+        db.refresh(db_order)
+
+    return db_order
+
+
+@router.post("/{order_id}/confirm-delivery", response_model=OrderResponse)
+def confirm_delivery(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_order = db.query(Order).filter(
+        Order.id == order_id,
+        Order.user_id == current_user.id
+    ).first()
+
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    db_order.status = "delivery-confirmed"
+    db.commit()
+    db.refresh(db_order)
+    return db_order

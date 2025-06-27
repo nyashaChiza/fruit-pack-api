@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Literal
+from .order import OrderItemCreate 
 
 class CartBase(BaseModel):
     product_id: int
@@ -29,12 +30,12 @@ class CartItem(BaseModel):
     quantity: int
 
 
-class CheckoutItem(BaseModel):
-    product_id: int
-    name: str
-    price: float
-    quantity: int
-
 class CheckoutRequest(BaseModel):
-    items: List[CheckoutItem]
+    items: List[OrderItemCreate]
+    full_name: str
+    address: str
+    phone: str
+    payment_method: Literal["card", "cash", "paypal"]
+
+
 

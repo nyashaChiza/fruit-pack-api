@@ -148,7 +148,7 @@ def confirm_delivery(
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    db_order.status = "delivery-confirmed"
+    db_order.status = "completed"
     db.commit()
     db.refresh(db_order)
     return db_order

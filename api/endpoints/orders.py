@@ -9,7 +9,7 @@ from core.auth import get_current_user
 from db.models.user import User
 from fastapi import Body
 
-router = APIRouter(prefix="/orders", tags=["Orders"])
+router = APIRouter(tags=["Orders"])
 
 @router.post("/", response_model=OrderResponse)
 def create_order(
@@ -152,3 +152,18 @@ def confirm_delivery(
     db.commit()
     db.refresh(db_order)
     return db_order
+
+@router.get("/user/{user_id}/orders", response_model=List[OrderResponse])
+def get_orders_by_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    orders = (
+        db.query(Order)
+        .filter(Order.user_id == user_id)
+        .order_by(Order.created.desc())
+        .all()
+    )
+    if not orders:
+        raise HTTPException(status_code=404, detail="No orders found for this user")
+    return orders

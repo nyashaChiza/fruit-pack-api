@@ -4,6 +4,7 @@ from datetime import datetime
 
 class OrderItemBase(BaseModel):
     product_id: int
+    name: str  # Product name at time of order
     quantity: int
     price: float  # Capture price at time of order
 

@@ -37,6 +37,7 @@ def create_checkout_session(
     for item in payload.items:
         order_item = OrderItem(
             order_id=order.id,
+            name=item.name,  # Capture product name at time of order
             product_id=item.product_id,
             quantity=item.quantity,
             price=item.price

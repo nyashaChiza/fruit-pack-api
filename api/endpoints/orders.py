@@ -166,4 +166,12 @@ def get_orders_by_user(
     )
     if not orders:
         raise HTTPException(status_code=404, detail="No orders found for this user")
-    return orders
+    
+    # Add total attribute to each order
+    result = []
+    for order in orders:
+        total = sum(item.price * item.quantity for item in order.items)
+        order_dict = OrderResponse.from_orm(order).dict()
+        order_dict["total"] = total
+        result.append(order_dict)
+    return result

@@ -154,24 +154,15 @@ def confirm_delivery(
     return db_order
 
 @router.get("/user/{user_id}/orders", response_model=List[OrderResponse])
-def get_orders_by_user(
-    user_id: int,
-    db: Session = Depends(get_db)
-):
+def get_orders_by_user(user_id: int, db: Session = Depends(get_db)):
     orders = (
         db.query(Order)
         .filter(Order.user_id == user_id)
         .order_by(Order.created.desc())
         .all()
     )
+    
     if not orders:
         raise HTTPException(status_code=404, detail="No orders found for this user")
-    
-    # Add total attribute to each order
-    result = []
-    for order in orders:
-        total = sum(item.price * item.quantity for item in order.items)
-        order_dict = OrderResponse.from_orm(order).dict()
-        order_dict["total"] = total
-        result.append(order_dict)
-    return result
+
+    return orders

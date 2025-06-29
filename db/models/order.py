@@ -14,6 +14,11 @@ class Order(Base):
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     user = relationship("User", back_populates="orders")
+    
+    @property
+    def total(self):
+        return sum(item.price * item.quantity for item in self.items)
+
 
 
 class OrderItem(Base):

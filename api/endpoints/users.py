@@ -9,7 +9,7 @@ from core.auth import get_current_user
 router = APIRouter()
 
 
-@router.post("/users/", response_model=UserRead)
+@router.post("/", response_model=UserRead)
 def create_user(
     user: UserCreate,
     db: Session = Depends(get_db)
@@ -33,7 +33,7 @@ def create_user(
     db.refresh(new_user)
     return new_user
 
-@router.get("/users/{user_id}", response_model=UserRead)
+@router.get("/{user_id}", response_model=UserRead)
 def read_user(
     user_id: int,
     db: Session = Depends(get_db),
@@ -44,7 +44,7 @@ def read_user(
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.put("/users/{user_id}", response_model=UserRead)
+@router.put("/{user_id}", response_model=UserRead)
 def update_user(
     user_id: int,
     user: UserCreate,
@@ -60,7 +60,7 @@ def update_user(
     db.refresh(db_user)
     return db_user
 
-@router.delete("/users/{user_id}")
+@router.delete("/{user_id}")
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
@@ -73,7 +73,7 @@ def delete_user(
     db.commit()
     return {"detail": "User deleted"}
 
-@router.get("/users/", response_model=list[UserRead])
+@router.get("/", response_model=list[UserRead])
 def read_users(
     skip: int = 0,
     limit: int = 100,

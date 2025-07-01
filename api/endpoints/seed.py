@@ -12,7 +12,7 @@ import shutil
 
 router = APIRouter()
 
-@router.post("/seed/")
+@router.post("/", summary="Seed initial data for suppliers, categories, and products")
 def seed_data(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

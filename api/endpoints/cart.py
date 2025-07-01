@@ -31,12 +31,13 @@ def create_checkout_session(
         status="pending",
     )
     db.add(order)
-    db.flush()  # flush to get order.id before adding items
+    db.flush()  # get order.id
 
     # Step 2: Create OrderItems
     for item in payload.items:
         order_item = OrderItem(
             order_id=order.id,
+            name=item.name,  # Capture product name at time of order
             product_id=item.product_id,
             quantity=item.quantity,
             price=item.price
@@ -45,14 +46,18 @@ def create_checkout_session(
 
     db.commit()
 
-    # Step 3: Create Stripe PaymentIntent
+    # Step 3: Create Stripe PaymentIntent with metadata
     try:
         intent = stripe.PaymentIntent.create(
             amount=amount_cents,
-            currency="usd",
+            currency="zar",  # corrected to match your return value
             metadata={
-                "user_id": current_user.id,
-                "order_id": order.id
+                "user_id": str(current_user.id),
+                "order_id": str(order.id),
+                "full_name": payload.full_name,
+                "address": payload.address,
+                "phone": payload.phone,
+                "payment_method": payload.payment_method,
             },
         )
 

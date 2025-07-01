@@ -19,7 +19,8 @@ class OrderItemResponse(OrderItemBase):
         orm_mode = True
 
 class OrderBase(BaseModel):
-    status: Optional[str] = "pending"
+    delivery_status: Optional[str]
+    payment_status: Optional[str]
 
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]

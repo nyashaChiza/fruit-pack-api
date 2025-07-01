@@ -19,7 +19,6 @@ def create_order(
 ):
     db_order = Order(
         user_id=current_user.id,
-        status="pending"
     )
     db.add(db_order)
     db.commit()
@@ -127,7 +126,7 @@ def update_order_status(
     # Optional: Add role check if needed (e.g. if only supplier can update certain statuses)
 
     if status_data.status:
-        db_order.status = status_data.status
+        db_order.delivery_status = status_data.status
         db.commit()
         db.refresh(db_order)
 
@@ -148,7 +147,7 @@ def confirm_delivery(
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    db_order.status = "completed"
+    db_order.delivery_status = "completed"
     db.commit()
     db.refresh(db_order)
     return db_order

@@ -28,7 +28,8 @@ def create_checkout_session(
     order = Order(
         user_id=current_user.id,
         total_amount=total_amount,
-        status="pending",
+        #id payment method is credit, set payment_status to 'credit
+        payment_status="credit" if payload.payment_method == 'credit' else "unpaid",  # Default to unpaid, will be updated after payment
     )
     db.add(order)
     db.flush()  # get order.id
@@ -48,26 +49,34 @@ def create_checkout_session(
 
     # Step 3: Create Stripe PaymentIntent with metadata
     try:
-        intent = stripe.PaymentIntent.create(
-            amount=amount_cents,
-            currency="zar",  # corrected to match your return value
-            metadata={
-                "user_id": str(current_user.id),
-                "order_id": str(order.id),
-                "full_name": payload.full_name,
-                "address": payload.address,
-                "phone": payload.phone,
-                "payment_method": payload.payment_method,
-            },
-        )
+        if payload.payment_method != 'credit':
+           intent = stripe.PaymentIntent.create(
+                amount=amount_cents,
+                currency="zar",  # corrected to match your return value
+                metadata={
+                    "user_id": str(current_user.id),
+                    "order_id": str(order.id),
+                    "full_name": payload.full_name,
+                    "address": payload.address,
+                    "phone": payload.phone,
+                    "payment_method": payload.payment_method,
+                    },
+                )
 
-        return {
-            "client_secret": intent.client_secret,
-            "amount": total_amount,
-            "currency": "zar",
-            "order_id": order.id,
-        }
-
+           return {
+                "client_secret": intent.client_secret,
+                "amount": total_amount,
+                "currency": "zar",
+                "order_id": order.id,
+            }
+        else:
+            # If payment method is credit, just return order details
+            return {
+                "order_id": order.id,
+                "total_amount": total_amount,
+                "currency": "zar",
+                "payment_status": order.payment_status,
+            }
     except stripe.error.StripeError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
@@ -92,7 +101,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         if order_id:
             order = db.query(Order).filter(Order.id == int(order_id)).first()
             if order:
-                order.status = "paid"
+                order.payment_status = "paid"
                 db.commit()
 
     elif event['type'] == 'payment_intent.payment_failed':
@@ -102,7 +111,7 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         if order_id:
             order = db.query(Order).filter(Order.id == int(order_id)).first()
             if order:
-                order.status = "failed"
+                order.payment_status = "failed"
                 db.commit()
 
     return {"status": "success"}

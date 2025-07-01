@@ -114,7 +114,7 @@ def seed_data(
             price=3.0,
             stock=40,
             supplier_id=supplier_objs[1].id,
-            category_id=category_objs[4].id,
+            category_id=category_objs[3].id,
             image=assign_image("Watermelon")
         ),
         Product(
@@ -123,7 +123,7 @@ def seed_data(
             price=1.8,
             stock=90,
             supplier_id=supplier_objs[2].id,
-            category_id=category_objs[5].id,
+            category_id=category_objs[2].id,
             image=assign_image("Green Apple")
         ),
         Product(
@@ -132,7 +132,7 @@ def seed_data(
             price=2.7,
             stock=70,
             supplier_id=supplier_objs[0].id,
-            category_id=category_objs[6].id,
+            category_id=category_objs[1].id,
             image=assign_image("Kiwi")
         ),
     ]

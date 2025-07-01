@@ -8,7 +8,8 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     total_amount = Column(Float, nullable=False)
-    status = Column(String, nullable=False, default='pending')
+    payment_status = Column(String, default='unpaid')  # 'paid' or 'credit'
+    delivery_status = Column(String, default='pending')  # 'pending', 'processing', 'delivered', 'completed'
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

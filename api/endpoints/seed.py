@@ -38,13 +38,10 @@ def seed_data(
 
     # Seed categories with icons
     categories = [
-        Category(name="Citrus", icon="🍊"),
-        Category(name="Berries", icon="🍓"),
-        Category(name="Tropical", icon="🥭"),
-        Category(name="Stone Fruits", icon="🍑"),
-        Category(name="Melons", icon="🍉"),
-        Category(name="Pomes", icon="🍏"),
-        Category(name="Exotic", icon="🥝"),
+        Category(name="ASAP", icon="🍊"),
+        Category(name="3 Days", icon="🍓"),
+        Category(name="5 Days", icon="🥭"),
+        Category(name="7 Days", icon="🍑"),
     ]
     db.add_all(categories)
     db.commit()

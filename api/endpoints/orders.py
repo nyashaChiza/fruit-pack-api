@@ -153,7 +153,7 @@ def confirm_delivery(
     return db_order
 
 @router.get("/user/{user_id}/orders", response_model=List[OrderResponse])
-def get_orders_by_user(user_id: int, db: Session = Depends(get_db)):
+def get_orders_by_user(user_id: int, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
     orders = (
         db.query(Order)
         .filter(Order.user_id == user_id)

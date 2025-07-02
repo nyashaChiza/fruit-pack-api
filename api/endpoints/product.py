@@ -55,7 +55,14 @@ def read_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return db.query(Product).offset(skip).limit(limit).all()
+    products = db.query(Product).offset(skip).limit(limit).all()
+    # Attach category name to each product if relationship exists
+    result = []
+    for product in products:
+        product_data = ProductRead.from_orm(product).dict()
+        product_data["category_name"] = product.category.name if product.category else None
+        result.append(product_data)
+    return result
 
 @router.get("/{product_id}", response_model=ProductRead)
 def read_product(
@@ -66,7 +73,9 @@ def read_product(
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    product_data = ProductRead.from_orm(product).dict()
+    product_data["category_name"] = product.category.name if product.category else None
+    return product_data
 
 @router.put("/{product_id}", response_model=ProductRead)
 def update_product(

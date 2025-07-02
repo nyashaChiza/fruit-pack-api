@@ -6,9 +6,10 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     supplier_id: int
     image: Optional[str] = None  # Stores image filename or path
-    category_id: Optional[int] = None
+    category_name: Optional[str] = None
     price: float
     stock: int
+
 
 class ProductCreate(ProductBase):
     pass
@@ -25,4 +26,4 @@ class ProductRead(ProductBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

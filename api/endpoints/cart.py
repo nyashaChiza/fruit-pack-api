@@ -78,9 +78,9 @@ def create_checkout_session(
             # If payment method is credit, just return order details
             return {
                 "order_id": order.id,
-                "total_amount": total_amount,
+                "amount": total_amount,
                 "currency": "zar",
-                "payment_status": order.payment_status,
+                
             }
     except stripe.error.StripeError as e:
         db.rollback()

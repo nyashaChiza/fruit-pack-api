@@ -38,6 +38,8 @@ def create_order(
             quantity=item.quantity,
             price=product.price
         )
+        product.stock -= item.quantity  # Decrease stock
+        db.add(product)  # Update product stock in the database
         db.add(order_item)
 
     db.commit()

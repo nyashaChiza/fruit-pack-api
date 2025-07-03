@@ -10,6 +10,7 @@ class Product(Base):
     name = Column(String, nullable=False)
     description = Column(String)
     price = Column(Float, nullable=False)
+    unit = Column(String, nullable=False)  # e.g., 'kg', 'pcs', 'liters'
     stock = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=False)

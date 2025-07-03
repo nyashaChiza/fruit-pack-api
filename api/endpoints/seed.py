@@ -78,8 +78,9 @@ def seed_data(
         Product(
             name="Orange",
             description="Fresh oranges",
-            price=1.5,
+            price=30.5,
             stock=100,
+            unit="kg",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[0].id,
             category_id=category_objs[0].id,
             image=assign_image("Orange")
@@ -87,8 +88,9 @@ def seed_data(
         Product(
             name="Strawberry",
             description="Sweet strawberries",
-            price=2.0,
+            price=25.0,
             stock=50,
+            unit="kg",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[1].id,
             category_id=category_objs[1].id,
             image=assign_image("Strawberry")
@@ -96,8 +98,9 @@ def seed_data(
         Product(
             name="Mango",
             description="Juicy tropical mangoes",
-            price=2.5,
+            price=29.5,
             stock=80,
+            unit="kg",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[2].id,
             category_id=category_objs[2].id,
             image=assign_image("Mango")
@@ -105,8 +108,9 @@ def seed_data(
         Product(
             name="Peach",
             description="Ripe stone fruit peaches",
-            price=2.2,
+            price=20.2,
             stock=60,
+            unit="kg",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[0].id,
             category_id=category_objs[3].id,
             image=assign_image("Peach")
@@ -114,8 +118,9 @@ def seed_data(
         Product(
             name="Watermelon",
             description="Refreshing watermelons",
-            price=3.0,
+            price=30.0,
             stock=40,
+            unit="head",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[1].id,
             category_id=category_objs[3].id,
             image=assign_image("Watermelon")
@@ -123,8 +128,9 @@ def seed_data(
         Product(
             name="Green Apple",
             description="Crisp green apples",
-            price=1.8,
+            price=19.8,
             stock=90,
+            unit="kg",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[2].id,
             category_id=category_objs[2].id,
             image=assign_image("Green Apple")
@@ -132,8 +138,9 @@ def seed_data(
         Product(
             name="Kiwi",
             description="Tangy exotic kiwis",
-            price=2.7,
+            price=10.7,
             stock=70,
+            unit="pcs",  # e.g., 'kg', 'pcs', 'liters'
             supplier_id=supplier_objs[0].id,
             category_id=category_objs[1].id,
             image=assign_image("Kiwi")

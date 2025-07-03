@@ -8,6 +8,7 @@ from schemas.product import ProductCreate, ProductUpdate, ProductRead
 from typing import List, Optional
 from core.auth import get_current_user
 from db.models.user import User  # Assuming you have a User model
+from pydantic import BaseModel
 
 router = APIRouter()
 IMAGE_DIR = "static/images"
@@ -21,6 +22,7 @@ async def create_product(
     category_id: Optional[int] = Form(None),
     price: float = Form(...),
     stock: int = Form(...),
+    unit: str = Form(...),  # e.g., 'kg', 'pcs', 'liters'
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -37,6 +39,7 @@ async def create_product(
         "name": name,
         "description": description,
         "supplier_id": supplier_id,
+        "unit": unit,  # e.g., 'kg', 'pcs', 'liters'
         "category_id": category_id,
         "price": price,
         "stock": stock,
@@ -55,7 +58,7 @@ def read_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    products = db.query(Product).filter(Product.is_active == True).offset(skip).limit(limit).all()
+    products = db.query(Product).filter(Product.is_active == True, Product.stock > 0 ).offset(skip).limit(limit).all()
     # Attach category name to each product if relationship exists
     result = []
     for product in products:
@@ -124,6 +127,23 @@ def deactivate_product(
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
     db_product.is_active = False
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+
+
+@router.patch("/{product_id}/stock", response_model=ProductRead)
+def set_product_stock(
+    product_id: int,
+    stock_update: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    db_product.stock = stock_update
     db.commit()
     db.refresh(db_product)
     return db_product

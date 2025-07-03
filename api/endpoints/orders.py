@@ -240,7 +240,7 @@ def assign_driver_to_order(
     # Update driver status
     driver = db.query(Driver).filter(Driver.id == data.driver_id).first()
     if driver:
-        driver.status = "busy"  # or "active" depending on your logic
+        driver.status = "busy" 
 
     # Create DriverClaim with status "approved"
       # adjust import if needed

@@ -12,7 +12,11 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+    role = Column(String, default="customer")  # e.g., "customer", "driver", "admin"
+
+    
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     orders = relationship("Order", back_populates="user")
+    driver = relationship("Driver", back_populates="user", uselist=False)

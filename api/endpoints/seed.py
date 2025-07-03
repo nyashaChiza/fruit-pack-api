@@ -6,16 +6,19 @@ from db.models.category import Category
 from db.models.product import Product
 from core.auth import get_current_user
 from db.models.user import User
+from db.models.driver import Driver
+from passlib.context import CryptContext
 import os
 import random
 import shutil
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 router = APIRouter()
 
-@router.post("/", summary="Seed initial data for suppliers, categories, and products")
+@router.post("/", summary="Seed initial data for suppliers, categories, products, and users")
 def seed_data(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     # Seed suppliers with correct fields
     supplier1 = Supplier(
@@ -38,10 +41,10 @@ def seed_data(
 
     # Seed categories with icons
     categories = [
-        Category(name="ASAP", icon="🍊"),
-        Category(name="3 Days", icon="🍓"),
-        Category(name="5 Days", icon="🥭"),
-        Category(name="7 Days", icon="🍑"),
+        Category(name="ASAP", icon="⏱️"),      # Stopwatch for ASAP
+        Category(name="3 Days", icon="🗓️"),   # Calendar for 3 days
+        Category(name="5 Days", icon="🕔"),   # Clock showing 5 o'clock for 5 days
+        Category(name="7 Days", icon="🕖"),   # Clock showing 7 o'clock for 7 days
     ]
     db.add_all(categories)
     db.commit()
@@ -137,6 +140,51 @@ def seed_data(
         ),
     ]
     db.add_all(products)
+    db.commit()
+
+    # Seed users: customer, admin, driver
+    users = [
+        User(
+            username="customer",
+            full_name="John Doe",
+            email="customer@example.com",
+            hashed_password=pwd_context.hash("12345"),
+            role="customer"
+        ),
+        User(
+            username="admin",
+            full_name="Jane Doe",
+            email="admin@example.com",
+            hashed_password=pwd_context.hash("12345"),
+            role="admin"
+        ),
+        User(
+            username="driver",
+            full_name="Peter Smith",
+            email="driver@example.com",
+            hashed_password=pwd_context.hash("12345"),
+            role="driver"
+        ),
+    ]
+    try:
+        # Check if users already exist to avoid duplicates
+        existing_users = db.query(User).filter(User.username.in_([user.username for user in users])).all()
+        if existing_users:
+            raise ValueError("Some users already exist, skipping seeding for those users.")
+        db.add_all(users)
+        db.commit()
+    except ValueError as ve:
+        # Optionally log or print the error
+        print(ve)
+
+    # Create a driver entry linked to the driver user
+    driver_user = db.query(User).filter(User.username == "driver").first()
+    driver_entry = Driver(
+        user_id=driver_user.id,
+        vehicle_number="XYZ 1234",
+        status="available"
+    )
+    db.add(driver_entry)
     db.commit()
 
     return {"detail": "Seed data inserted successfully"}

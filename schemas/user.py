@@ -6,6 +6,7 @@ class UserBase(BaseModel):
     username: str
     full_name: str
     is_active: bool
+    role: str = "customer"  # Default role can be overridden
 
 class UserCreate(UserBase):
     password: str

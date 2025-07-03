@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, func
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, func, Boolean
 from sqlalchemy.orm import relationship
 from db.base import Base
 
@@ -11,6 +11,7 @@ class Product(Base):
     description = Column(String)
     price = Column(Float, nullable=False)
     stock = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
     supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=False)
     category_id = Column(Integer, ForeignKey('Categories.id'))
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

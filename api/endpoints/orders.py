@@ -8,6 +8,7 @@ from db.models.product import Product as ProductModel
 from core.auth import get_current_user
 from db.models.user import User
 from fastapi import Body
+from pydantic import BaseModel
 
 router = APIRouter(tags=["Orders"])
 
@@ -165,3 +166,36 @@ def get_orders_by_user(user_id: int, db: Session = Depends(get_db),  current_use
         raise HTTPException(status_code=404, detail="No orders found for this user")
 
     return orders
+
+
+@router.get("/driver/{driver_id}/orders", response_model=List[OrderResponse])
+def get_orders_by_driver(driver_id: int, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
+    orders = (
+        db.query(Order)
+        .filter(Order.driver_id == driver_id)
+        .order_by(Order.created.desc())
+        .all()
+    )
+    
+    if not orders:
+        raise HTTPException(status_code=404, detail="No orders found for this driver")
+
+    return orders
+
+class AssignDriverRequest(BaseModel):
+    driver_id: int
+
+@router.put("/{order_id}/assign-driver", response_model=OrderResponse)
+def assign_driver_to_order(
+    order_id: int,
+    data: AssignDriverRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_order = db.query(Order).filter(Order.id == order_id).first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    db_order.driver_id = data.driver_id
+    db.commit()
+    db.refresh(db_order)
+    return db_order

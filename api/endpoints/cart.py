@@ -28,7 +28,9 @@ def create_checkout_session(
     order = Order(
         user_id=current_user.id,
         total_amount=total_amount,
-        #id payment method is credit, set payment_status to 'credit
+        destination_address=payload.address,
+        customer_phone=payload.phone,
+        customer_name=payload.full_name,
         payment_status="credit" if payload.payment_method == 'credit' else "unpaid",  # Default to unpaid, will be updated after payment
     )
     db.add(order)

@@ -7,13 +7,18 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    driver_id = Column(Integer, ForeignKey("drivers.id"), nullable=True)
     total_amount = Column(Float, nullable=False)
+    destination_address = Column(String, nullable=True)
+    customer_phone = Column(String, nullable=True)  # Customer's phone number
+    customer_name = Column(String, nullable=True)  # Customer's name for delivery
     payment_status = Column(String, default='unpaid')  # 'paid' or 'credit'
     delivery_status = Column(String, default='pending')  # 'pending', 'processing', 'delivered', 'completed'
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    driver = relationship("Driver", back_populates="orders")
     user = relationship("User", back_populates="orders")
     
     @property

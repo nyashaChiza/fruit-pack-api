@@ -55,7 +55,7 @@ def read_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    products = db.query(Product).offset(skip).limit(limit).all()
+    products = db.query(Product).filter(Product.is_active == True).offset(skip).limit(limit).all()
     # Attach category name to each product if relationship exists
     result = []
     for product in products:
@@ -113,3 +113,17 @@ def get_image(image_filename: str):
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(image_path)
+
+@router.patch("/{product_id}/deactivate", response_model=ProductRead)
+def deactivate_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    db_product.is_active = False
+    db.commit()
+    db.refresh(db_product)
+    return db_product

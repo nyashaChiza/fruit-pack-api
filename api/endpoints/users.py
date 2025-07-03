@@ -28,6 +28,7 @@ def create_user(
         full_name=user.full_name,
         username=user.username,
         hashed_password=hashed_password,
+        role=user.role,  # Use the role from the schema
         is_active=True
     )
     db.add(new_user)

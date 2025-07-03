@@ -20,6 +20,7 @@ class Order(Base):
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     driver = relationship("Driver", back_populates="orders")
     user = relationship("User", back_populates="orders")
+    claim = relationship("DriverClaim", uselist=False, back_populates="order")
     
     @property
     def total(self):

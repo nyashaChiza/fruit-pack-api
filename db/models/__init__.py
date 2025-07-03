@@ -6,3 +6,4 @@ from .product import Product
 from .category import Category
 from .cart import Cart
 from .driver import Driver
+from .driver_claims import DriverClaim

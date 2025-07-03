@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from schemas.order import OrderCreate, OrderUpdate, OrderResponse
 from db.models.order import Order, OrderItem
+from db.models.driver_claims import DriverClaim
 from db.session import get_db
 from sqlalchemy.orm import Session
 from db.models.product import Product as ProductModel
@@ -113,7 +114,7 @@ def get_order_items(
 
 
 @router.put("/{order_id}/status", response_model=OrderResponse)
-def update_order_status(
+def update_delivery_order_status(
     order_id: int,
     status_data: OrderUpdate,
     db: Session = Depends(get_db),
@@ -182,6 +183,34 @@ def get_orders_by_driver(driver_id: int, db: Session = Depends(get_db),  current
 
     return orders
 
+@router.get("/status/{delivery_status}/driver/{driver_id}/orders", response_model=List[OrderResponse])
+def get_orders_by_delivery_status(delivery_status: str, driver_id: int, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
+    if delivery_status == 'unassigned':
+        orders = (
+            db.query(Order)
+            .filter(Order.driver_id.is_(None), Order.payment_status != 'unpaid')
+            .order_by(Order.created.desc())
+            .all()
+        )
+    elif delivery_status == 'assigned':
+        orders = (
+            db.query(Order)
+            .filter(Order.driver_id == driver_id)
+            .order_by(Order.created.desc())
+            .all()
+        )
+    elif delivery_status == 'delivered':
+        orders = (
+            db.query(Order)
+            .filter(Order.delivery_status == 'delivered', Order.driver_id == driver_id)
+            .order_by(Order.created.desc())
+            .all()
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No orders found for this driver")
+
+    return orders
+
 class AssignDriverRequest(BaseModel):
     driver_id: int
 
@@ -195,7 +224,25 @@ def assign_driver_to_order(
     db_order = db.query(Order).filter(Order.id == order_id).first()
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
+
+    # Assign driver to order
     db_order.driver_id = data.driver_id
+    db_order.delivery_status = "shipped"
+
+    # Update driver status
+    driver = db.query(User).filter(User.id == data.driver_id).first()
+    if driver:
+        driver.status = "busy"  # or "active" depending on your logic
+
+    # Create DriverClaim with status "approved"
+      # adjust import if needed
+    driver_claim = DriverClaim(
+        order_id=order_id,
+        driver_id=data.driver_id,
+        status="approved"
+    )
+    db.add(driver_claim)
+
     db.commit()
     db.refresh(db_order)
     return db_order

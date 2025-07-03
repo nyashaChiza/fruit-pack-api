@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from db.models.driver import Driver
 from core.auth import get_current_user
 from db.models.user import User
-from schemas.driver import DriverCreate, DriverRead, DriverUpdate 
+from schemas.driver import DriverCreate, DriverLocationUpdate, DriverRead, DriverUpdate 
 from db.session import get_db
 from pydantic import BaseModel
 
@@ -64,3 +64,18 @@ def set_driver_status(
     db.commit()
     db.refresh(db_driver)
     return db_driver
+
+@router.post("/driver/{driver_id}/location")
+def update_driver_location(
+    location: DriverLocationUpdate,
+    driver_id: int,
+    db: Session = Depends(get_db),
+    current_user: Driver = Depends(get_current_user)
+):
+    
+    current_driver = db.query(Driver).filter(Driver.id == driver_id).first()
+    current_driver.latitude = location.latitude
+    current_driver.longitude = location.longitude
+    db.commit()
+    db.refresh(current_driver)
+    return {"detail": "Location updated"}

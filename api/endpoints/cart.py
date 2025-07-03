@@ -80,6 +80,7 @@ def create_checkout_session(
                 "order_id": order.id,
                 "amount": total_amount,
                 "currency": "zar",
+                "client_secret": None
                 
             }
     except stripe.error.StripeError as e:

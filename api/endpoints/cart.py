@@ -71,7 +71,6 @@ def create_checkout_session(
            return {
                 "client_secret": intent.client_secret,
                 "amount": total_amount,
-                "currency": "zar",
                 "order_id": order.id,
             }
         else:
@@ -79,7 +78,6 @@ def create_checkout_session(
             return {
                 "order_id": order.id,
                 "amount": total_amount,
-                "currency": "zar",
                 "client_secret": None
                 
             }

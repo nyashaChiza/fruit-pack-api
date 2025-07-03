@@ -238,7 +238,7 @@ def assign_driver_to_order(
     db_order.delivery_status = "shipped"
 
     # Update driver status
-    driver = db.query(User).filter(User.id == data.driver_id).first()
+    driver = db.query(Driver).filter(Driver.id == data.driver_id).first()
     if driver:
         driver.status = "busy"  # or "active" depending on your logic
 

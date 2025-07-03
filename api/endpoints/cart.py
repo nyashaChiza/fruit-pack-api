@@ -29,8 +29,11 @@ def create_checkout_session(
         user_id=current_user.id,
         total_amount=total_amount,
         destination_address=payload.address,
+        destination_latitude=payload.latitude,
+        destination_longitude=payload.longitude,
         customer_phone=payload.phone,
         customer_name=payload.full_name,
+        payment_method=payload.payment_method,  # Capture payment method
         payment_status="credit" if payload.payment_method == 'credit' else "unpaid",  # Default to unpaid, will be updated after payment
     )
     db.add(order)
@@ -51,7 +54,7 @@ def create_checkout_session(
 
     # Step 3: Create Stripe PaymentIntent with metadata
     try:
-        if payload.payment_method != 'credit':
+        if payload.payment_method != 'cash':
            intent = stripe.PaymentIntent.create(
                 amount=amount_cents,
                 currency="zar",  # corrected to match your return value

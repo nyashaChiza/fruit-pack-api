@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from schemas.order import OrderCreate, OrderUpdate, OrderResponse
+from schemas.order import OrderCreate, OrderUpdate, OrderResponse, OrderLocationUpdate
 from db.models.order import Order, OrderItem
 from db.models.driver_claims import DriverClaim
 from db.session import get_db
 from sqlalchemy.orm import Session
 from db.models.product import Product as ProductModel
+from db.models.driver import Driver
 from core.auth import get_current_user
 from db.models.user import User
 from fastapi import Body
 from pydantic import BaseModel
 
-router = APIRouter(tags=["Orders"])
+router = APIRouter()
 
 @router.post("/", response_model=OrderResponse)
 def create_order(
@@ -126,6 +127,11 @@ def update_delivery_order_status(
         raise HTTPException(status_code=404, detail="Order not found")
 
     # Optional: Add role check if needed (e.g. if only supplier can update certain statuses)
+    if status_data.status == 'delivered' and db_order.payment_method == 'cash':
+        db_order.payment_status = 'paid'
+        driver = db.query(Driver).filter(Driver.id == db_order.driver_id).first()
+        if driver:
+            driver.status = 'available'
 
     if status_data.status:
         db_order.delivery_status = status_data.status
@@ -148,7 +154,7 @@ def confirm_delivery(
 
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
-
+    
     db_order.delivery_status = "completed"
     db.commit()
     db.refresh(db_order)
@@ -246,3 +252,18 @@ def assign_driver_to_order(
     db.commit()
     db.refresh(db_order)
     return db_order
+
+@router.post("/order/{order_id}/location")
+def update_order_location(
+    location: OrderLocationUpdate,
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    
+    order = db.query(Order).filter(Order.id == order_id).first()
+    order.destination_latitude = location.latitude
+    order.destination_longitude = location.longitude
+    db.commit()
+    db.refresh(order)
+    return {"detail": "Location updated"}

@@ -25,6 +25,9 @@ class OrderBase(BaseModel):
     destination_address: Optional[str] = None  # Delivery address
     delivery_status: Optional[str]
     payment_status: Optional[str]
+    payment_method: Optional[str] = None  # e.g., 'card', 'cash', 'paypal'
+    destination_latitude: Optional[float]
+    destination_longitude: Optional[float]
 
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]
@@ -43,3 +46,6 @@ class OrderResponse(OrderBase):
     class Config:
         from_attributes = True
 
+class OrderLocationUpdate(BaseModel):
+    destination_latitude: Optional[float] = None
+    destination_longitude: Optional[float] = None

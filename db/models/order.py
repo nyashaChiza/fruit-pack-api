@@ -10,6 +10,9 @@ class Order(Base):
     driver_id = Column(Integer, ForeignKey("drivers.id"), nullable=True)
     total_amount = Column(Float, nullable=False)
     destination_address = Column(String, nullable=True)
+    destination_latitude = Column(Float, nullable=True)
+    destination_longitude = Column(Float, nullable=True)
+    payment_method = Column(String, nullable=True)  # e.g., 'card', 'cash', 'paypal'
     customer_phone = Column(String, nullable=True)  # Customer's phone number
     customer_name = Column(String, nullable=True)  # Customer's name for delivery
     payment_status = Column(String, default='unpaid')  # 'paid' or 'credit'

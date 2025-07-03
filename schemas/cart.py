@@ -34,6 +34,8 @@ class CheckoutRequest(BaseModel):
     items: List[OrderItemCreate]
     full_name: str
     address: str
+    latitude: float
+    longitude: float
     phone: str
     payment_method: Literal["card", "cash", "paypal"]
 

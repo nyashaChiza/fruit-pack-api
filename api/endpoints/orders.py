@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
+
 @router.post("/", response_model=OrderResponse)
 def create_order(
     order: OrderCreate,

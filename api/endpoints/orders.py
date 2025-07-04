@@ -284,3 +284,22 @@ def update_order_location(
     db.commit()
     db.refresh(order)
     return {"detail": "Location updated"}
+
+@router.get("/driver/{driver_id}/delivered-orders", response_model=List[OrderResponse])
+def get_driver_delivered_orders(
+    driver_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    orders = (
+        db.query(Order)
+        .filter(
+            Order.driver_id == driver_id,
+            Order.delivery_status.in_(["delivered", "completed"])
+        )
+        .order_by(Order.created.desc())
+        .all()
+    )
+    if not orders:
+        raise HTTPException(status_code=404, detail="No delivered or completed orders found for this driver")
+    return orders

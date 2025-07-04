@@ -52,7 +52,7 @@ def read_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    order = db.query(Order).filter(Order.id == order_id, Order.user_id == current_user.id).first()
+    order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order

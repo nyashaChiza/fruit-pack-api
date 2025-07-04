@@ -191,6 +191,20 @@ def get_orders_by_driver(driver_id: int, db: Session = Depends(get_db),  current
 
     return orders
 
+@router.get("/available/orders", response_model=List[OrderResponse])
+def get_available_orders(db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
+    orders = (
+        db.query(Order)
+        .filter(Order.driver_id == None)
+        .order_by(Order.created.desc())
+        .all()
+    )
+    
+    if not orders:
+        raise HTTPException(status_code=404, detail="No available orders found")
+
+    return orders
+
 @router.get("/status/{delivery_status}/driver/{driver_id}/orders", response_model=List[OrderResponse])
 def get_orders_by_delivery_status(delivery_status: str, driver_id: int, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
     if delivery_status == 'unassigned':

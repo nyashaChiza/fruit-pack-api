@@ -27,6 +27,13 @@ def get_driver(driver_id: int, db: Session = Depends(get_db), current_user: User
         raise HTTPException(status_code=404, detail="Driver not found")
     return driver
 
+@router.get("/user/{user_id}", response_model=DriverRead)
+def get_driver_by_user_id(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    driver = db.query(Driver).filter(Driver.user_id == user_id).first()
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver not found")
+    return driver
+
 @router.put("/{driver_id}", response_model=DriverRead)
 def update_driver(driver_id: int, driver: DriverUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_driver = db.query(Driver).filter(Driver.id == driver_id).first()

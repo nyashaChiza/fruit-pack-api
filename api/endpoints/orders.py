@@ -93,7 +93,7 @@ def list_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    orders = db.query(Order).filter(Order.user_id == current_user.id).all()
+    orders = db.query(Order).all()
     return orders
 
 @router.get("/{order_id}/items")

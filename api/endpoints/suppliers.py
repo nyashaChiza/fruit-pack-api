@@ -1,5 +1,6 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.supplier import SupplierCreate, SupplierUpdate, Supplier
+from schemas.supplier import SupplierCreate, SupplierUpdate, Supplier, SupplierRead
 from db.models.supplier import Supplier as SupplierModel
 from db.session import get_db
 from sqlalchemy.orm import Session
@@ -19,6 +20,14 @@ def create_supplier(
     db.commit()
     db.refresh(db_supplier)
     return db_supplier
+
+
+@router.get("/", response_model=List[SupplierRead])
+def read_suppliers(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return db.query(SupplierModel).all()
 
 @router.get("/{supplier_id}", response_model=Supplier)
 def read_supplier(

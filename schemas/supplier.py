@@ -15,5 +15,9 @@ class SupplierUpdate(SupplierBase):
 class Supplier(SupplierBase):
     id: int
 
+class SupplierRead(BaseModel):
+    id: int
+    name: str
+
     class Config:
         orm_mode = True

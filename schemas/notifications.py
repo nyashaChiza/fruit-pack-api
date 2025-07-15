@@ -8,6 +8,7 @@ class NotificationBase(BaseModel):
     header: str
     event_type: str
     status: str
+    created: datetime
 
 class NotificationCreate(NotificationBase):
     id: int

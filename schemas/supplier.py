@@ -18,6 +18,9 @@ class Supplier(SupplierBase):
 class SupplierRead(BaseModel):
     id: int
     name: str
+    contact_email: str
+    phone_number: Optional[str] = None
+
 
     class Config:
         orm_mode = True

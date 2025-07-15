@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.models.driver_claims import DriverClaim
 from db.models.driver import Driver
 from db.models.order import Order
+from db.models import notify_user
 from db.session import get_db
 from schemas.category import CategoryCreate, CategoryUpdate, CategoryRead
 from typing import List
@@ -26,6 +27,10 @@ def claim_order(order_id: int, driver_id: int, db: Session = Depends(get_db), cu
     claim = DriverClaim(order_id=order_id, driver_id=current_driver.id)
     db.add(claim)
     db.commit()
+    db.refresh(claim)
+    notify_user(db, claim.driver_id, f"Claim #{claim.id} for Order #{claim.order_id} has been Created",'Claim Creation','Claim', claim.id)
+
+    
     return {"message": "Claim submitted for approval."}
 
 
@@ -56,6 +61,7 @@ def approve_driver_claim(
     order.driver_id = driver.id  # optional if not already assigned
 
     db.commit()
+    notify_user(db, claim.driver_id, f"Claim #{claim.id} for Order #{claim.order_id} has been Approved",'Claim Approved','Claim', claim.id)
 
     return {"message": "Claim approved, driver marked busy, and order marked as shipped"}
 
@@ -71,6 +77,7 @@ def reject_claim(claim_id: int, db: Session = Depends(get_db), current_user=Depe
 
     claim.status = "rejected"
     db.commit()
+    notify_user(db, claim.driver_id, f"Claim #{claim.id} for Order #{claim.order_id} has been Rejected",'Claim Rejected','Claim', claim.id)
     return {"message": "Claim rejected."}
 
 

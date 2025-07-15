@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.models import Order, OrderItem
+from db.models import Order, OrderItem, notify_user
 from core.auth import get_current_user
 from schemas import CheckoutRequest
 from core.config import settings
@@ -36,8 +36,10 @@ def create_checkout_session(
         payment_method=payload.payment_method,  # Capture payment method
         payment_status="credit" if payload.payment_method == 'credit' else "unpaid",  # Default to unpaid, will be updated after payment
     )
+
     db.add(order)
-    db.flush()  # get order.id
+    db.flush()  # get order.ide
+    notify_user(db, current_user.id, f"Order #{order.id} is created and is being processed",'Order Created','Order', order.id)
 
     # Step 2: Create OrderItems
     for item in payload.items:

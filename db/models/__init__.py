@@ -7,3 +7,4 @@ from .category import Category
 from .cart import Cart
 from .driver import Driver
 from .driver_claims import DriverClaim
+from .notifications import Notification, notify_user

@@ -4,11 +4,13 @@ from schemas.order import OrderCreate, OrderUpdate, OrderResponse, OrderLocation
 from db.models.order import Order, OrderItem
 from db.models.driver_claims import DriverClaim
 from db.session import get_db
+
 from sqlalchemy.orm import Session
 from db.models.product import Product as ProductModel
 from db.models.driver import Driver
 from core.auth import get_current_user
 from db.models.user import User
+from db.models import notify_user
 from fastapi import Body
 from pydantic import BaseModel
 
@@ -161,6 +163,8 @@ def confirm_delivery(
     db_order.delivery_status = "completed"
     db.commit()
     db.refresh(db_order)
+    notify_user(db, db_order.user_id, f"Order #{db_order.id} delivery has been Completed",'Order Completed','Order', db_order.id)
+
     return db_order
 
 @router.get("/user/{user_id}/orders", response_model=List[OrderResponse])
@@ -268,6 +272,8 @@ def assign_driver_to_order(
 
     db.commit()
     db.refresh(db_order)
+    notify_user(db, db_order.driver_id, f"Order #{db_order.id} delivery has been Assigned a Driver",'Order Assigned','Order', db_order.id)
+
     return db_order
 
 @router.post("/order/{order_id}/location")

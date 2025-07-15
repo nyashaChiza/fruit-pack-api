@@ -20,3 +20,4 @@ class User(Base):
 
     orders = relationship("Order", back_populates="user")
     driver = relationship("Driver", back_populates="user", uselist=False)
+    notifications = relationship("Notification", back_populates="user")

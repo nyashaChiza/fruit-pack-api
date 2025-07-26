@@ -187,6 +187,7 @@ def get_orders_by_driver(driver_id: int, db: Session = Depends(get_db),  current
     orders = (
         db.query(Order)
         .filter(Order.driver_id == driver_id)
+        .filter(Order.delivery_status == 'shipped')
         .order_by(Order.created.desc())
         .all()
     )

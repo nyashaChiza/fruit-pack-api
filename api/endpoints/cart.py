@@ -1,16 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.models import Driver, DriverClaim, Order, OrderItem, notify_user
+from db.models import OrderItem, Order, DriverClaim, Driver
+from db.models import Order, notify_user
 from core.auth import get_current_user
 from schemas import CheckoutRequest
 from core.config import settings
-from helpers import get_nearby_drivers
+from helpers import create_order, create_order_items, create_driver_claims, create_payment_intent
 import stripe
 
 router = APIRouter(prefix="/checkout", tags=["Checkout"])
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET  # Set this securely
 
 @router.post("/")
@@ -22,84 +23,47 @@ def create_checkout_session(
     if not payload.items:
         raise HTTPException(status_code=400, detail="Cart is empty")
 
-    total_amount = sum(item.price * item.quantity for item in payload.items)
-    amount_cents = int(total_amount * 100)
-
-    # Step 1: Create Order
-    order = Order(
-        user_id=current_user.id,
-        total_amount=total_amount,
-        destination_address=payload.address,
-        destination_latitude=payload.latitude,
-        destination_longitude=payload.longitude,
-        customer_phone=payload.phone,
-        customer_name=payload.full_name,
-        payment_method=payload.payment_method,  # Capture payment method
-        payment_status="credit" if payload.payment_method == 'credit' else "unpaid",  # Default to unpaid, will be updated after payment
-    )
-
-    db.add(order)
-    db.flush()  # get order.ide
-    notify_user(db, current_user.id, f"Order #{order.id} is created and is being processed",'Order Created','Order', order.id)
-
-    # Step 2: Create OrderItems
-    for item in payload.items:
-        order_item = OrderItem(
-            order_id=order.id,
-            name=item.name,  # Capture product name at time of order
-            product_id=item.product_id,
-            quantity=item.quantity,
-            price=item.price
-        )
-        db.add(order_item)
-
-    db.commit()
-
-    # Step 3: Create Stripe PaymentIntent with metadata
     try:
-        if payload.payment_method != 'cash':
-           intent = stripe.PaymentIntent.create(
-                amount=amount_cents,
-                currency="zar",  # corrected to match your return value
-                metadata={
-                    "user_id": str(current_user.id),
-                    "order_id": str(order.id),
-                    "full_name": payload.full_name,
-                    "address": payload.address,
-                    "phone": payload.phone,
-                    "payment_method": payload.payment_method,
-                    },
-                )
+        total_amount = sum(item.price * item.quantity for item in payload.items)
+        amount_cents = int(total_amount * 100)
 
-           response = {
-                "client_secret": intent.client_secret,
-                "amount": total_amount,
-                "order_id": order.id,
-            }
-        else:
-            # If payment method is credit, just return order details
+        # 1. Create Order
+        order = create_order(db, Order, current_user, payload, total_amount)
+
+        # 2. Create Order Items
+        create_order_items(db, OrderItem, order.id, payload.items)
+
+        # 3. Send user notification
+        notify_user(db, current_user.id, f"Order #{order.id} is created and is being processed", 'Order Created', 'Order', order.id)
+
+        # 4. Notify Drivers
+        create_driver_claims(db, Driver, DriverClaim, order)
+
+        # 5. Handle Payment
+        if payload.payment_method == "cash":
             response = {
                 "order_id": order.id,
                 "amount": total_amount,
                 "client_secret": None
-                
             }
-        # Step 4: Notify drivers about order creation
-        drivers = db.query(Driver).all()
-        nearby_drivers = get_nearby_drivers(order, drivers)
-        for driver in nearby_drivers:
-            claim = DriverClaim(
-                driver_id=driver.id,
-                order_id=order.id,
-                claim_type="system",  # System-generated claim
-                status="pending")
-            db.add(claim)
+        else:
+            intent = create_payment_intent(payload, current_user.id, order.id, amount_cents)
+            response = {
+                "client_secret": intent.client_secret,
+                "amount": total_amount,
+                "order_id": order.id
+            }
+
         db.commit()
-        
         return response
+
     except stripe.error.StripeError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 

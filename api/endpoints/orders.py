@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from schemas.order import OrderCreate, OrderUpdate, OrderResponse, OrderLocationUpdate
+from schemas.order import OrderCreate, OrderUpdate, OrderResponse, OrderLocationUpdate, OrderItemResponse
 from db.models.order import Order, OrderItem
 from db.models.driver_claims import DriverClaim
 from db.session import get_db
-
-from sqlalchemy.orm import Session
+from helpers import distance_between
+from sqlalchemy.orm import Session, joinedload
 from db.models.product import Product as ProductModel
 from db.models.driver import Driver
 from core.auth import get_current_user
@@ -56,9 +56,48 @@ def read_order(
     current_user: User = Depends(get_current_user)
 ):
     order = db.query(Order).filter(Order.id == order_id).first()
+
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    return order
+
+    driver = db.query(Driver).filter(Driver.user_id == current_user.id).first()
+
+    # If current user is not a driver, fallback to the driver assigned to the order
+    if not driver and order.driver_id:
+        driver = db.query(Driver).filter(Driver.id == order.driver_id).first()
+        
+
+    distance_km = None
+    if driver:
+        if all([driver.latitude is not None, driver.longitude is not None, order.destination_latitude is not None, order.destination_longitude is not None]):
+            distance_km = distance_between(
+            {'lat': driver.latitude, 'lng': driver.longitude},
+            {'lat': order.destination_latitude, 'lng': order.destination_longitude}
+        )
+        distance_km = round(distance_km, 2)
+
+        order_data = OrderResponse(
+        id=order.id,
+                user_id=order.user_id,
+                driver_id=order.driver_id,
+                customer_name=order.customer_name,
+                customer_phone=order.customer_phone,
+                destination_address=order.destination_address,
+                delivery_status=order.delivery_status,
+                payment_status=order.payment_status,
+                payment_method=order.payment_method,
+                destination_latitude=order.destination_latitude,
+                destination_longitude=order.destination_longitude,
+                distance_from_driver=distance_km,
+                created=order.created,
+                updated=order.updated,
+                total=order.total,  
+                items=order.items or []  # Ensure items is always a list
+            )
+        return order_data
+    else:
+        return order
+
 
 @router.put("/{order_id}", response_model=OrderResponse)
 def update_order(
@@ -116,7 +155,6 @@ def get_order_items(
         }
         for item in items
     ]
-
 
 
 @router.put("/{order_id}/status", response_model=OrderResponse)
@@ -198,19 +236,70 @@ def get_orders_by_driver(driver_id: int, db: Session = Depends(get_db),  current
     return orders
 
 @router.get("/available/orders", response_model=List[OrderResponse])
-def get_available_orders(db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
+def get_available_orders(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    driver = db.query(Driver).filter(Driver.user_id == current_user.id).first()
+
+    if not driver:
+        orders = (
+        db.query(Order)
+        .options(joinedload(Order.items))  # ✅ Eager-load order items
+        .filter(Order.driver_id == None)
+        .order_by(Order.created.desc())
+        .all()
+       )
+        return orders
+
     orders = (
         db.query(Order)
+        .options(joinedload(Order.items))  # ✅ Eager-load order items
         .filter(Order.driver_id == None)
         .order_by(Order.created.desc())
         .all()
     )
-    
+
     if not orders:
         raise HTTPException(status_code=404, detail="No available orders found")
 
-    return orders
+    result = []
+    for order in orders:
+        distance = None
+        if (
+            driver.latitude is not None and driver.longitude is not None
+            and order.destination_latitude is not None and order.destination_longitude is not None
+        ):
+            distance = distance_between(
+                {'lat': driver.latitude, 'lng': driver.longitude},
+                {'lat': order.destination_latitude, 'lng': order.destination_longitude}
+            )
 
+        # 🔧 Manual mapping
+        item_responses = [
+            OrderItemResponse.from_orm(item)
+            for item in order.items
+        ]
+
+        order_data = OrderResponse(
+            id=order.id,
+            user_id=order.user_id,
+            driver_id=order.driver_id,
+            customer_name=order.customer_name,
+            customer_phone=order.customer_phone,
+            destination_address=order.destination_address,
+            delivery_status=order.delivery_status,
+            payment_status=order.payment_status,
+            payment_method=order.payment_method,
+            destination_latitude=order.destination_latitude,
+            destination_longitude=order.destination_longitude,
+            distance_from_driver=distance,
+            created=order.created,
+            updated=order.updated,
+            total=order.total,  # ⚠️ Double-check: total vs total_amount?
+            items=item_responses
+        )
+
+        result.append(order_data)
+
+    return result
 @router.get("/status/{delivery_status}/driver/{driver_id}/orders", response_model=List[OrderResponse])
 def get_orders_by_delivery_status(delivery_status: str, driver_id: int, db: Session = Depends(get_db),  current_user: User = Depends(get_current_user)):
     if delivery_status == 'unassigned':

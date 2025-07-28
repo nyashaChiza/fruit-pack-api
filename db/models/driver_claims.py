@@ -10,6 +10,7 @@ class DriverClaim(Base):
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     driver_id = Column(Integer, ForeignKey("drivers.id"), nullable=False)
+    claim_type = Column(String, nullable=False, default="driver")  # e.g., "system", "driver"
     status = Column(String, default="pending")  # pending, approved, rejected
     created = Column(DateTime, default=datetime.utcnow)
     updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

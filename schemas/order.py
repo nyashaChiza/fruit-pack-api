@@ -14,9 +14,8 @@ class OrderItemCreate(OrderItemBase):
 class OrderItemResponse(OrderItemBase):
     id: int
     order_id: int
-
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class OrderBase(BaseModel):
     driver_id: Optional[int] = None  # Optional driver ID for delivery
@@ -28,6 +27,7 @@ class OrderBase(BaseModel):
     payment_method: Optional[str] = None  # e.g., 'card', 'cash', 'paypal'
     destination_latitude: Optional[float]
     destination_longitude: Optional[float]
+    distance_from_driver: Optional[float] = None  # 👈 added
 
 class OrderCreate(OrderBase):
     items: List[OrderItemCreate]

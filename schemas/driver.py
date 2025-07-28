@@ -13,6 +13,7 @@ class DriverCreate(DriverBase):
 
 class DriverRead(DriverBase):
     user_id: int
+    driver_name: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 

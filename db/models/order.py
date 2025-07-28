@@ -1,5 +1,8 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, func, Float, String
 from sqlalchemy.orm import relationship
+import db
+from db.models.driver import Driver
+from helpers import distance_between
 from db.base import Base
 
 class Order(Base):
@@ -28,6 +31,7 @@ class Order(Base):
     @property
     def total(self):
         return sum(item.price * item.quantity for item in self.items)
+
 
 
 

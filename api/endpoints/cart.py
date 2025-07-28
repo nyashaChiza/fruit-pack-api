@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from db.session import get_db
-from db.models import Order, OrderItem, notify_user
+from db.models import Driver, DriverClaim, Order, OrderItem, notify_user
 from core.auth import get_current_user
 from schemas import CheckoutRequest
 from core.config import settings
+from helpers import get_nearby_drivers
 import stripe
 
 router = APIRouter(prefix="/checkout", tags=["Checkout"])
@@ -70,19 +71,32 @@ def create_checkout_session(
                     },
                 )
 
-           return {
+           response = {
                 "client_secret": intent.client_secret,
                 "amount": total_amount,
                 "order_id": order.id,
             }
         else:
             # If payment method is credit, just return order details
-            return {
+            response = {
                 "order_id": order.id,
                 "amount": total_amount,
                 "client_secret": None
                 
             }
+        # Step 4: Notify drivers about order creation
+        drivers = db.query(Driver).all()
+        nearby_drivers = get_nearby_drivers(order, drivers)
+        for driver in nearby_drivers:
+            claim = DriverClaim(
+                driver_id=driver.id,
+                order_id=order.id,
+                claim_type="system",  # System-generated claim
+                status="pending")
+            db.add(claim)
+        db.commit()
+        
+        return response
     except stripe.error.StripeError as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")

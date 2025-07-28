@@ -145,7 +145,7 @@ def get_driver_claims(
     current_driver = db.query(Driver).filter(Driver.id == driver_id).first()
     if not current_driver:
         raise HTTPException(status_code=404, detail="Driver not found")
-    claims = db.query(DriverClaim).filter_by(driver_id=current_driver.id, claim_type="driver").order_by(DriverClaim.created.desc()).all()
+    claims = db.query(DriverClaim).filter(DriverClaim.driver_id == current_driver.id, DriverClaim.claim_type == "driver", DriverClaim.status != "cancelled").order_by(DriverClaim.created.desc()).all()
     for claim in claims:
         claim.driver_name = claim.driver.user.full_name 
     return claims
@@ -163,7 +163,7 @@ def get_system_driver_claims(
     .filter(
         DriverClaim.driver_id == current_driver.id,
         DriverClaim.claim_type == "system",
-        DriverClaim.status != "cancelled"
+        DriverClaim.status != "cancelled" or DriverClaim.status != "rejected"
     )
     .order_by(DriverClaim.created.desc())
     .all()

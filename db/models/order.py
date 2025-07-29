@@ -1,9 +1,13 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, func, Float, String
 from sqlalchemy.orm import relationship
-import db
-from db.models.driver import Driver
-from helpers import distance_between
+import uuid
 from db.base import Base
+
+from nanoid import generate
+
+def generate_order_id():
+    alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'  # 32 unique characters
+    return generate(alphabet, 10)
 
 class Order(Base):
     __tablename__ = "orders"
@@ -13,6 +17,7 @@ class Order(Base):
     driver_id = Column(Integer, ForeignKey("drivers.id"), nullable=True)
     total_amount = Column(Float, nullable=False)
     destination_address = Column(String, nullable=True)
+    order_number = Column(String, unique=True, nullable=False, default=generate_order_id)
     destination_latitude = Column(Float, nullable=True)
     destination_longitude = Column(Float, nullable=True)
     payment_method = Column(String, nullable=True)  # e.g., 'card', 'cash', 'paypal'

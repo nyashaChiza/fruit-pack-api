@@ -20,6 +20,7 @@ class OrderItemResponse(OrderItemBase):
 class OrderBase(BaseModel):
     driver_id: Optional[int] = None  # Optional driver ID for delivery
     customer_name: Optional[str] = None  # Customer's name for delivery
+    order_number: Optional[str] = None  # Unique order number
     customer_phone: Optional[str] = None  # Customer's phone number for delivery
     destination_address: Optional[str] = None  # Delivery address
     delivery_status: Optional[str]

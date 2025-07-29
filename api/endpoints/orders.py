@@ -56,19 +56,17 @@ def read_order(
     current_user: User = Depends(get_current_user)
 ):
     order = db.query(Order).filter(Order.id == order_id).first()
-
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-
-    driver = db.query(Driver).filter(Driver.user_id == current_user.id).first()
-
-    # If current user is not a driver, fallback to the driver assigned to the order
-    if not driver and order.driver_id:
+    driver = None
+    if order.driver_id:
         driver = db.query(Driver).filter(Driver.id == order.driver_id).first()
-        
+    
+    # If current user is not a driver, fallback to the driver assigned to the order
+    if not driver:
+        driver = db.query(Driver).filter(Driver.user_id == current_user.id).first()
+
 
     distance_km = None
-    if driver:
+    if driver and order.delivery_status not in ['delivered', 'complete']:
         if all([driver.latitude is not None, driver.longitude is not None, order.destination_latitude is not None, order.destination_longitude is not None]):
             distance_km = distance_between(
             {'lat': driver.latitude, 'lng': driver.longitude},

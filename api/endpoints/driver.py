@@ -26,7 +26,7 @@ def get_driver(driver_id: int, db: Session = Depends(get_db), current_user: User
     driver = db.query(Driver).filter(Driver.id == driver_id).first()
     if not driver:
         raise HTTPException(status_code=404, detail="Driver not found")
-    driver.name = driver.user.full_name
+    driver.driver_name = driver.user.full_name
     return driver
 
 @router.get("/user/{user_id}", response_model=DriverRead)
@@ -56,7 +56,7 @@ def list_drivers(
 ):
     drivers = db.query(Driver).all()
     for driver in drivers:
-        driver.name = driver.user.full_name if driver.user else "Unknown"
+        driver.driver_name = driver.user.full_name if driver.user else "Unknown"
     return drivers
 
 @router.patch("/{driver_id}/status", response_model=DriverRead)

@@ -97,6 +97,8 @@ def read_product(
             "image": p.image,
             "price": p.price,
             "id": p.id,
+            "supplier_id": p.supplier_id,
+            "stock": p.stock,
             "unit": p.unit,  # Include unit for related products
             "category_name": p.category.name if p.category else None,
             "description": p.description

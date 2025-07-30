@@ -11,10 +11,8 @@ class ProductBase(BaseModel):
     price: float
     stock: int
 
-class RelatedProduct(BaseModel):
-    name: str
-    image: Optional[str]
-    price: float
+class RelatedProduct(ProductBase):
+    id: int
 
 class ProductCreate(ProductBase):
     pass

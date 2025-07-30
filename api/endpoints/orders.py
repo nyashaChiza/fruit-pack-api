@@ -78,6 +78,7 @@ def read_order(
         id=order.id,
                 user_id=order.user_id,
                 driver_id=order.driver_id,
+                order_number=order.order_number,
                 customer_name=order.customer_name,
                 customer_phone=order.customer_phone,
                 destination_address=order.destination_address,

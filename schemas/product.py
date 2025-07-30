@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class ProductBase(BaseModel):
     name: str
@@ -11,6 +11,10 @@ class ProductBase(BaseModel):
     price: float
     stock: int
 
+class RelatedProduct(BaseModel):
+    name: str
+    image: Optional[str]
+    price: float
 
 class ProductCreate(ProductBase):
     pass
@@ -26,6 +30,7 @@ class ProductUpdate(BaseModel):
 
 class ProductRead(ProductBase):
     id: int
+    related_products: List[RelatedProduct] = []
 
     class Config:
         from_attributes = True

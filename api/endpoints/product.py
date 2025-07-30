@@ -78,7 +78,30 @@ def read_product(
         raise HTTPException(status_code=404, detail="Product not found")
     product_data = ProductRead.from_orm(product).dict()
     product_data["category_name"] = product.category.name if product.category else None
+
+        # Related products
+    related_products = (
+        db.query(Product)
+        .filter(
+            Product.category_id == product.category_id,
+            Product.id != product.id
+        )
+        .limit(3)
+        .all()
+    )
+
+    # Attach simplified related product info
+    product_data["related_products"] = [
+        {
+            "name": p.name,
+            "image": p.image,
+            "price": p.price
+        }
+        for p in related_products
+    ]
+
     return product_data
+ 
 
 @router.put("/{product_id}", response_model=ProductRead)
 def update_product(

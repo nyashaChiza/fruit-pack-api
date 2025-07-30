@@ -278,6 +278,7 @@ def get_available_orders(db: Session = Depends(get_db), current_user: User = Dep
 
         order_data = OrderResponse(
             id=order.id,
+            order_number=order.order_number,
             user_id=order.user_id,
             driver_id=order.driver_id,
             customer_name=order.customer_name,

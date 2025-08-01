@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api.endpoints import orders, suppliers, users, product, auth, category, cart, seed, driver, driver_claim, notification
+from api.endpoints import orders, suppliers, users, product, auth, category, cart, seed, driver, driver_claim, notification, advert
 from db.base import Base
 from db.session import engine
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,6 +19,7 @@ app.add_middleware(
 
 app.include_router(seed.router, prefix="/seed", tags=["seed"])
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(advert.router, prefix="/adverts", tags=["adverts"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(suppliers.router, prefix="/suppliers", tags=["suppliers"])
 app.include_router(category.router, prefix="/categories", tags=["categories"])

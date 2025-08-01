@@ -4,6 +4,7 @@ from db.session import get_db
 from db.models.supplier import Supplier
 from db.models.category import Category
 from db.models.product import Product
+from db.models.adverts import Advert
 from core.auth import get_current_user
 from db.models.user import User
 from db.models.driver import Driver
@@ -20,6 +21,29 @@ router = APIRouter()
 def seed_data(
     db: Session = Depends(get_db)
 ):
+    #seed adverts with correct fields
+    advert1 = Advert(
+        title="Fresh Fruits Sale",
+        description="Get the best fresh fruits at unbeatable prices!",
+        status="active",
+    )
+    advert2 = Advert(
+        title="Organic Vegetables",
+        description="Buy organic vegetables directly from farmers.",
+        status="active",
+    )
+    advert3 = Advert(
+        title="Weekly Specials",
+        description="Check out our weekly specials on selected items.",
+        status="active",
+    )
+    advert4 = Advert(
+        title="Seasonal Fruits",
+        description="Enjoy seasonal fruits at discounted prices.",
+        status="active",
+    )
+    db.add_all([advert1, advert2, advert3, advert4])
+    db.commit()
     # Seed suppliers with correct fields
     supplier1 = Supplier(
         name="FreshFruits Ltd",

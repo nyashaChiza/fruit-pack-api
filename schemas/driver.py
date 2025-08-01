@@ -8,8 +8,11 @@ class DriverBase(BaseModel):
     status: Optional[str] = "available"  # e.g., "available", "busy", "offline"
 
 
-class DriverCreate(DriverBase):
+class DriverCreate(BaseModel):
     user_id: int
+    vehicle_number: Optional[str] = None
+    is_active: bool = True
+    status: Optional[str] = "available"  # e.g., "available", "busy", "offline"
 
 class DriverRead(DriverBase):
     user_id: int

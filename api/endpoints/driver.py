@@ -13,7 +13,7 @@ router = APIRouter(tags=["drivers"])
 class DriverStatusUpdate(BaseModel):
     status: str
 
-@router.post("/", response_model=DriverRead)
+@router.post("/", response_model=DriverCreate)
 def create_driver(driver_create: DriverCreate, db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
     db_driver = Driver(**driver_create.dict())
     db.add(db_driver)

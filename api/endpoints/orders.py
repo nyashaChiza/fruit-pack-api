@@ -168,12 +168,18 @@ def update_delivery_order_status(
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    # Optional: Add role check if needed (e.g. if only supplier can update certain statuses)
-    if status_data.status == 'delivered' and db_order.payment_method == 'cash':
-        db_order.payment_status = 'paid'
-        driver = db.query(Driver).filter(Driver.id == db_order.driver_id).first()
-        if driver:
-            driver.status = 'available'
+    # Require delivery_code when status is 'delivered'
+    if status_data.status == 'delivered':
+        if not status_data.delivery_code:
+            raise HTTPException(status_code=400, detail="Delivery code is required to mark the order as delivered")
+        if status_data.delivery_code != db_order.delivery_code:
+            raise HTTPException(status_code=403, detail="Invalid delivery code")
+
+        if db_order.payment_method == 'cash':
+            db_order.payment_status = 'paid'
+            driver = db.query(Driver).filter(Driver.id == db_order.driver_id).first()
+            if driver:
+                driver.status = 'available'
 
     if status_data.status:
         db_order.delivery_status = status_data.status
@@ -181,6 +187,7 @@ def update_delivery_order_status(
         db.refresh(db_order)
 
     return db_order
+
 
 
 @router.post("/{order_id}/confirm-delivery", response_model=OrderResponse)

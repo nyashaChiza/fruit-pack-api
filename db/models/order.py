@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, func, Float, String
 from sqlalchemy.orm import relationship
-import uuid
+import random
 from db.base import Base
 
 from nanoid import generate
@@ -25,6 +25,7 @@ class Order(Base):
     customer_name = Column(String, nullable=True)  # Customer's name for delivery
     payment_status = Column(String, default='unpaid')  # 'paid' or 'credit'
     delivery_status = Column(String, default='pending')  # 'pending', 'processing', 'delivered', 'completed'
+    delivery_code = Column(Integer, default=random.randint(10000,99999))
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

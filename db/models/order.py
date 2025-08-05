@@ -9,6 +9,11 @@ def generate_order_id():
     alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'  # 32 unique characters
     return generate(alphabet, 10)
 
+def generate_delivery_code():
+    return random.randint(10000, 99999)
+
+
+
 class Order(Base):
     __tablename__ = "orders"
 
@@ -25,7 +30,7 @@ class Order(Base):
     customer_name = Column(String, nullable=True)  # Customer's name for delivery
     payment_status = Column(String, default='unpaid')  # 'paid' or 'credit'
     delivery_status = Column(String, default='pending')  # 'pending', 'processing', 'delivered', 'completed'
-    delivery_code = Column(Integer, default=random.randint(10000,99999))
+    delivery_code = Column(Integer, default=generate_delivery_code)
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

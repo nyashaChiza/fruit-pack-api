@@ -75,7 +75,7 @@ def read_order(
         distance_km = round(distance_km, 2)
 
         order_data = OrderResponse(
-        id=order.id,
+                id=order.id,
                 user_id=order.user_id,
                 driver_id=order.driver_id,
                 order_number=order.order_number,
@@ -83,6 +83,7 @@ def read_order(
                 customer_phone=order.customer_phone,
                 destination_address=order.destination_address,
                 delivery_status=order.delivery_status,
+                delivery_code=order.delivery_code,
                 payment_status=order.payment_status,
                 payment_method=order.payment_method,
                 destination_latitude=order.destination_latitude,

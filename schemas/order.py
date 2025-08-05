@@ -45,6 +45,7 @@ class OrderResponse(OrderBase):
     updated: datetime
     items: Optional[List[OrderItemResponse]] = []
     total: float
+  
 
     class Config:
         from_attributes = True

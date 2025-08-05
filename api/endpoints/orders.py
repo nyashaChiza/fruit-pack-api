@@ -71,7 +71,7 @@ def read_order(
             distance_km = distance_between(
             {'lat': driver.latitude, 'lng': driver.longitude},
             {'lat': order.destination_latitude, 'lng': order.destination_longitude}
-        )
+        ) or 0
         distance_km = round(distance_km, 2)
 
         order_data = OrderResponse(
@@ -277,7 +277,7 @@ def get_available_orders(db: Session = Depends(get_db), current_user: User = Dep
             distance = distance_between(
                 {'lat': driver.latitude, 'lng': driver.longitude},
                 {'lat': order.destination_latitude, 'lng': order.destination_longitude}
-            )
+            ) or 0
 
         # 🔧 Manual mapping
         item_responses = [

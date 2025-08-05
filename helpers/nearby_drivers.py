@@ -23,7 +23,7 @@ def get_nearby_drivers(order, drivers, radius_km=20):
             distance = distance_between(
                 {'lat': driver.latitude, 'lng': driver.longitude},
                 {'lat': order.destination_latitude, 'lng': order.destination_longitude}
-            )
+            ) or 0
             if distance <= radius_km:
                 nearby.append(driver)
     return nearby

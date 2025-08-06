@@ -1,4 +1,5 @@
 from helpers import get_nearby_drivers
+from helpers.notifications import send_push_notification
 import stripe
 from core.config import settings
 
@@ -31,9 +32,10 @@ def create_order_items(db, OrderItem, order_id, items):
         db.add(order_item)
 
 
-def create_driver_claims(db, Driver, DriverClaim, order):
+async def create_driver_claims(db, Driver, DriverClaim, order):
     drivers = db.query(Driver).all()
     nearby_drivers = get_nearby_drivers(order, drivers)
+
     for driver in nearby_drivers:
         claim = DriverClaim(
             driver_id=driver.id,
@@ -42,6 +44,16 @@ def create_driver_claims(db, Driver, DriverClaim, order):
             status="pending"
         )
         db.add(claim)
+
+        if driver.user.push_token:
+            await send_push_notification(
+                driver.user.push_token,
+                "Order Claim",
+                "A new order has been created"
+            )
+
+    db.commit()
+        
 
 
 def create_payment_intent(payload, user_id, order_id, amount_cents):

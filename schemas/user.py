@@ -7,6 +7,7 @@ class UserBase(BaseModel):
     full_name: str
     is_active: bool
     role: str = "customer"  # Default role can be overridden
+    push_token: str
 
 class UserCreate(UserBase):
     password: str

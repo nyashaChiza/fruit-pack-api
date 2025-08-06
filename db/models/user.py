@@ -13,6 +13,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     role = Column(String, default="customer")  # e.g., "customer", "driver", "admin"
+    push_token = Column(String, nullable=True)
+
 
     
     created = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -124,6 +124,7 @@ def check_credit_eligibility(user_id: int, db: Session = Depends(get_db),  curre
 
 @router.post("/users/push-token")
 def store_push_token(payload: PushTokenPayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    current_user.push_token = payload.token
+    current_user.push_token = payload.pushToken
     db.commit()
+    print(f"Received push token: {payload.pushToken}")
     return {"message": "Push token saved"}

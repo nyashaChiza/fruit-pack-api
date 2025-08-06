@@ -19,4 +19,5 @@ class UserRead(UserBase):
         orm_mode = True
 
 class PushTokenPayload(BaseModel):
-    token: str
+    pushToken: str
+

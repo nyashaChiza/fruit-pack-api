@@ -11,7 +11,8 @@ from db.models.user import User  # Assuming you have a User model
 from pydantic import BaseModel
 
 router = APIRouter()
-IMAGE_DIR = "static/images"
+IMAGE_DIR = "/var/data/static/images"
+
 
 
 @router.post("/", response_model=ProductRead)

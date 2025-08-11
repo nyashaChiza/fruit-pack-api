@@ -1,7 +1,7 @@
 import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from db.models.order import Order
-from schemas.user import UserCreate, UserRead
+from schemas.user import UserCreate, UserRead, PushTokenPayload
 from db.models.user import User
 from db.session import get_db
 from sqlalchemy.orm import Session
@@ -121,3 +121,10 @@ def check_credit_eligibility(user_id: int, db: Session = Depends(get_db),  curre
         ),
         "remaining_credit_limit": max(0, 300 - total_credit_balance)
     }
+
+@router.post("/users/push-token")
+def store_push_token(payload: PushTokenPayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    current_user.push_token = payload.pushToken
+    db.commit()
+    print(f"Received push token: {payload.pushToken}")
+    return {"message": "Push token saved"}

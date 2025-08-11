@@ -18,3 +18,10 @@ class NotificationRead(NotificationBase):
 
     class Config:
         orm_mode = True
+
+class NotificationAlert(BaseModel):
+    user_id: str
+    title: str
+    body: str
+    timestamp: datetime
+    read: bool = False

@@ -15,7 +15,7 @@ router = APIRouter(prefix="/checkout", tags=["Checkout"])
 endpoint_secret = settings.STRIPE_WEBHOOK_SECRET  # Set this securely
 
 @router.post("/")
-def create_checkout_session(
+async def create_checkout_session(
     payload: CheckoutRequest,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
@@ -34,10 +34,17 @@ def create_checkout_session(
         create_order_items(db, OrderItem, order.id, payload.items)
 
         # 3. Send user notification
-        notify_user(db, current_user.id, f"Order #{order.id} is created and is being processed", 'Order Created', 'Order', order.id)
+        notify_user(
+            db,
+            current_user.id,
+            f"Order #{order.id} is created and is being processed",
+            'Order Created',
+            'Order',
+            order.id
+        )
 
-        # 4. Notify Drivers
-        create_driver_claims(db, Driver, DriverClaim, order)
+        # 4. Notify Drivers (await the async function)
+        await create_driver_claims(db, Driver, DriverClaim, order)
 
         # 5. Handle Payment
         if payload.payment_method == "cash":
@@ -63,7 +70,6 @@ def create_checkout_session(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 

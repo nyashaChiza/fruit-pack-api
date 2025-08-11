@@ -8,9 +8,12 @@ DATABASE_URL = "sqlite:////var/data/app.db"  # Persistent disk path on Render
 db_file_path = DATABASE_URL.replace("sqlite:///", "")
 db_dir = os.path.dirname(db_file_path)
 
-# Create the directory if it doesn't exist
-os.makedirs(db_dir, exist_ok=True)
-
+try:
+    # Create the directory if it doesn't exist
+    os.makedirs(db_dir, exist_ok=True)
+except Exception as e:
+    print(e)
+    DATABASE_URL = "sqlite:///db.sqlite3"
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}
 )

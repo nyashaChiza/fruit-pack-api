@@ -1,9 +1,19 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "sqlite:////var/data/app.db"  # Replace with your actual database URL
+DATABASE_URL = "sqlite:////var/data/app.db"  # Persistent disk path on Render
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+# Extract actual file path from the URL
+db_file_path = DATABASE_URL.replace("sqlite:///", "")
+db_dir = os.path.dirname(db_file_path)
+
+# Create the directory if it doesn't exist
+os.makedirs(db_dir, exist_ok=True)
+
+engine = create_engine(
+    DATABASE_URL, connect_args={"check_same_thread": False}
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

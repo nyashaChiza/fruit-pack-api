@@ -179,21 +179,21 @@ def seed_data(
             username="customer",
             full_name="John Doe",
             email="customer@example.com",
-            hashed_password=pwd_context.hash("12345"),
+            hashed_password=pwd_context.hash("Pa55word@2035"),
             role="customer"
         ),
         User(
             username="admin",
             full_name="Jane Doe",
             email="admin@example.com",
-            hashed_password=pwd_context.hash("12345"),
+            hashed_password=pwd_context.hash("Pa55word@2035"),
             role="admin"
         ),
         User(
             username="driver",
             full_name="Peter Smith",
             email="driver@example.com",
-            hashed_password=pwd_context.hash("12345"),
+            hashed_password=pwd_context.hash("Pa55word@2035"),
             role="driver"
         ),
     ]

@@ -23,8 +23,11 @@ class DriverRead(DriverBase):
     class Config:
         orm_mode = True
 
-class DriverUpdate(DriverBase):
+class DriverUpdate(BaseModel):
     vehicle_number: Optional[str] = None
+    status: Optional[str] = "available"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class DriverLocationUpdate(BaseModel):
     latitude: float

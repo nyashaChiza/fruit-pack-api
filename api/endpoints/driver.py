@@ -54,7 +54,7 @@ def list_drivers(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    drivers = db.query(Driver).all()
+    drivers = db.query(Driver).filter(Driver.is_active == True).all()
     for driver in drivers:
         driver.driver_name = driver.user.full_name if driver.user else "Unknown"
     return drivers
@@ -76,6 +76,7 @@ def set_driver_status(
     db.refresh(db_driver)
     return db_driver
 
+
 @router.post("/driver/{driver_id}/location")
 def update_driver_location(
     location: DriverLocationUpdate,
@@ -90,3 +91,18 @@ def update_driver_location(
     db.commit()
     db.refresh(current_driver)
     return {"detail": "Location updated"}
+
+@router.delete("/{driver_id}", response_model=DriverRead)
+def delete_driver(
+    driver_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_driver = db.query(Driver).filter(Driver.id == driver_id).first()
+    if not db_driver:
+        raise HTTPException(status_code=404, detail="Driver not found")
+    
+    db_driver.is_active = False    
+    db.commit()
+    db.refresh(db_driver)
+    return db_driver

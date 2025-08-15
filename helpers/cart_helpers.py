@@ -3,6 +3,7 @@ from helpers.notifications import send_push_notification
 import stripe
 import requests
 from core.config import settings
+from loguru import logger
 
 def create_order(db, Order,user, payload, total_amount):
     order = Order(
@@ -34,27 +35,29 @@ def create_order_items(db, OrderItem, order_id, items):
 
 
 async def create_driver_claims(db, Driver, DriverClaim, order):
-    drivers = db.query(Driver).all()
-    nearby_drivers = get_nearby_drivers(order, drivers)
+    try:
+        drivers = db.query(Driver).all()
+        nearby_drivers = get_nearby_drivers(order, drivers)
 
-    for driver in nearby_drivers:
-        claim = DriverClaim(
-            driver_id=driver.id,
-            order_id=order.id,
-            claim_type="system",
-            status="pending"
-        )
-        db.add(claim)
-
-        if driver.user.push_token:
-            await send_push_notification(
-                driver.user.push_token,
-                "Order Claim",
-                "A new order has been created"
+        for driver in nearby_drivers:
+            claim = DriverClaim(
+                driver_id=driver.id,
+                order_id=order.id,
+                claim_type="system",
+                status="pending"
             )
+            db.add(claim)
 
-    db.commit()
-        
+            if driver.user.push_token:
+                await send_push_notification(
+                    driver.user.push_token,
+                    "Order Claim",
+                    "A new order has been created"
+                )
+
+        db.commit()
+    except Exception as e:
+        logger.error(e)        
 
 
 def create_payment_intent(payload, user_id, order_id, amount_cents):

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from db.session import get_db
 from db.models import OrderItem, Order, DriverClaim, Driver
@@ -50,7 +51,7 @@ async def create_checkout_session(
         )
 
         # 4. Notify Drivers
-        # await create_driver_claims(db, Driver, DriverClaim, order)
+        await create_driver_claims(db, Driver, DriverClaim, order)
 
         # 5. Handle Payment
         if payload.payment_method == "cash":
@@ -96,7 +97,7 @@ async def paystack_webhook(request: Request, db: Session = Depends(get_db)):
                     if order:
                         order.payment_status = "paid"
                         db.commit()
-        return {"status": "success"}
+        return RedirectResponse(url="fruitpack://OrderList")
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Webhook error: {str(e)}")

@@ -1,6 +1,0 @@
-SECRET_KEY = 
-PAYSTACK_SECRET_KEY = 
-PAYSTACK_ENDPOINT = https://api.paystack.co/transaction/initialize
-PAYSTACK_VERIFY = https://api.paystack.co/transaction/verify/
-
- 

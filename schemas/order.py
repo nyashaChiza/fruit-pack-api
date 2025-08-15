@@ -25,7 +25,7 @@ class OrderBase(BaseModel):
     destination_address: Optional[str] = None  # Delivery address
     delivery_status: Optional[str]
     payment_status: Optional[str]
-    delivery_code: Optional[str]
+    delivery_code: Optional[int]
     payment_method: Optional[str] = None  # e.g., 'card', 'cash', 'paypal'
     destination_latitude: Optional[float]
     destination_longitude: Optional[float]

@@ -302,7 +302,7 @@ def get_available_orders(db: Session = Depends(get_db), current_user: User = Dep
             distance_from_driver=distance,
             created=order.created,
             updated=order.updated,
-            total=order.total,  # ⚠️ Double-check: total vs total_amount?
+            total=order.total_amount,  
             items=item_responses
         )
 

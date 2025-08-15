@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from db.session import get_db
 from db.models import OrderItem, Order, DriverClaim, Driver
@@ -97,7 +96,7 @@ async def paystack_webhook(request: Request, db: Session = Depends(get_db)):
                     if order:
                         order.payment_status = "paid"
                         db.commit()
-        return RedirectResponse(url="fruitpack://OrderList")
+        return {"status": "success"}
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Webhook error: {str(e)}")

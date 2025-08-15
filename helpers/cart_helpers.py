@@ -35,7 +35,7 @@ def create_order_items(db, OrderItem, order_id, items):
 
 
 async def create_driver_claims(db, Driver, DriverClaim, order):
-    try:
+
         drivers = db.query(Driver).all()
         nearby_drivers = get_nearby_drivers(order, drivers)
 
@@ -47,17 +47,18 @@ async def create_driver_claims(db, Driver, DriverClaim, order):
                 status="pending"
             )
             db.add(claim)
+            try:
+                if driver.user.push_token:
+                    await send_push_notification(
+                        driver.user.push_token,
+                        "Order Claim",
+                        "A new order has been created"
+                    )
+            except Exception as e:
+                logger.error(e)        
 
-            if driver.user.push_token:
-                await send_push_notification(
-                    driver.user.push_token,
-                    "Order Claim",
-                    "A new order has been created"
-                )
 
         db.commit()
-    except Exception as e:
-        logger.error(e)        
 
 
 def create_payment_intent(payload, user_id, order_id, amount_cents):

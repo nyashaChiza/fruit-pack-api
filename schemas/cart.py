@@ -32,7 +32,7 @@ class CartItem(BaseModel):
 
 class CheckoutRequest(BaseModel):
     items: List[OrderItemCreate]
-    full_name: str
+    email: str
     address: str
     latitude: float
     longitude: float

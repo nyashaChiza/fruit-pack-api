@@ -1,3 +1,6 @@
-SECRET_KEY = kjhxtfggsztxcvvgctdctzrszrsxcvjjjgvg
-STRIPE_SECRET_KEY = d;khskodsoondsd
-STRIPE_WEBHOOK_SECRET = wdfrhjc_1234567890abcdef12345678
+SECRET_KEY = kjhxtfggszjvjvjvj
+PAYSTACK_SECRET_KEY = sk_test_7bcfa15a294c6jcfyxhxxdxh
+PAYSTACK_ENDPOINT = https://api.paystack.co/transaction/initialize
+PAYSTACK_VERIFY = https://api.paystack.co/transaction/verify/
+
+ 

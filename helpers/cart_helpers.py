@@ -1,6 +1,7 @@
 from helpers import get_nearby_drivers
 from helpers.notifications import send_push_notification
 import stripe
+import requests
 from core.config import settings
 
 def create_order(db, Order,user, payload, total_amount):
@@ -11,7 +12,7 @@ def create_order(db, Order,user, payload, total_amount):
         destination_latitude=payload.latitude,
         destination_longitude=payload.longitude,
         customer_phone=payload.phone,
-        customer_name=payload.full_name,
+        customer_name=payload.email,
         payment_method=payload.payment_method,
         payment_status="credit" if payload.payment_method == 'credit' else "unpaid",
     )
@@ -64,9 +65,47 @@ def create_payment_intent(payload, user_id, order_id, amount_cents):
         metadata={
             "user_id": str(user_id),
             "order_id": str(order_id),
-            "full_name": payload.full_name,
+            "full_name": payload.email,
             "address": payload.address,
             "phone": payload.phone,
             "payment_method": payload.payment_method,
         },
     )
+
+
+def initialize_paystack_transaction(payload, user_id, order_id, amount_cents):
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "email": payload.email,
+        "amount": amount_cents,  # Paystack expects amount in cents
+        "currency": "ZAR",
+        "reference": f"ORDER_{order_id}_{user_id}",
+        "metadata": {
+            "user_id": str(user_id),
+            "order_id": str(order_id),
+            "email": payload.email,
+            "address": payload.address,
+            "phone": payload.phone,
+            "payment_method": payload.payment_method,
+        },
+  
+    }
+
+    response = requests.post(settings.PAYSTACK_ENDPOINT, json=data, headers=headers)
+
+    if response.status_code != 200:
+        raise Exception(f"Paystack init failed: {response.json().get('message')}")
+
+    return response.json()["data"]  # includes payment_url and access_code
+
+def verify_paystack_transaction(reference: str):
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"
+    }
+    url = f"{settings.PAYSTACK_VERIFY}{reference}"
+    response = requests.get(url, headers=headers)
+    return response.json()

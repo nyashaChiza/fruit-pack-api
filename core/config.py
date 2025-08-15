@@ -7,8 +7,10 @@ class Settings(object):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     DEBUG: bool = config("DEBUG", default=False, cast=bool)
     SECRET_KEY: str = config('SECRET_KEY', 'jgcxkvhfxtrzrzrztcxryxycvjvj')
-    STRIPE_SECRET_KEY: str = config("STRIPE_SECRET_KEY", "dljskbfhsjfsn")
-    STRIPE_WEBHOOK_SECRET: str = config("STRIPE_WEBHOOK_SECRET","ljhdld")
+    PAYSTACK_SECRET_KEY: str = config("PAYSTACK_SECRET_KEY", "sljksbbsb")
+    PAYSTACK_ENDPOINT: str = config("PAYSTACK_ENDPOINT","https://api.paystack.co/transaction/initialize")
+    PAYSTACK_VERIFY: str = config("PAYSTACK_VERIFY","https://api.paystack.co/transaction/verify/")
+
 
     class Config:
         env_file = ".env"

@@ -291,6 +291,7 @@ def get_available_orders(db: Session = Depends(get_db), current_user: User = Dep
             user_id=order.user_id,
             driver_id=order.driver_id,
             customer_name=order.customer_name,
+            delivery_code=order.delivery_code,
             customer_phone=order.customer_phone,
             destination_address=order.destination_address,
             delivery_status=order.delivery_status,

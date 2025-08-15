@@ -187,8 +187,10 @@ def list_all_claims(
     claims = query.order_by(DriverClaim.created.desc()).all()
 
     for claim in claims:
-        claim.driver_name = claim.driver.user.full_name
-
+        if claim.driver and claim.driver.user:
+            claim.driver_name = claim.driver.user.full_name
+        else:
+            claim.driver_name = "Unassigned"
     return claims
 
 

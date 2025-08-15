@@ -11,7 +11,7 @@ from db.models.driver import Driver
 from core.auth import get_current_user
 from db.models.user import User
 from db.models import notify_user
-from fastapi import Body
+from sqlalchemy import desc
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -134,7 +134,8 @@ def list_orders(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    orders = db.query(Order).all()
+    
+    orders = db.query(Order).order_by(desc(Order.created)).all()
     return orders
 
 @router.get("/{order_id}/items")

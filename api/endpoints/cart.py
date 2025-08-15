@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.session import get_db
 from db.models import OrderItem, Order, DriverClaim, Driver
 from db.models import notify_user
+from loguru import logger
 from core.auth import get_current_user
 from schemas import CheckoutRequest
 from core.config import settings
@@ -60,7 +61,7 @@ async def create_checkout_session(
             }
         else:
             init = initialize_paystack_transaction(payload, current_user.id, order.id, amount_cents)
-
+            logger.critical(init)
             response = {
                 'order_id': order.id,
                 'payment_url': init.get('authorization_url'),

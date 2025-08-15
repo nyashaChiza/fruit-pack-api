@@ -49,7 +49,7 @@ async def create_checkout_session(
         )
 
         # 4. Notify Drivers
-        await create_driver_claims(db, Driver, DriverClaim, order)
+        # await create_driver_claims(db, Driver, DriverClaim, order)
 
         # 5. Handle Payment
         if payload.payment_method == "cash":

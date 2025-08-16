@@ -2,7 +2,7 @@ import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from db.models.order import Order
 from schemas.user import UserCreate, UserRead, PushTokenPayload
-from db.models.user import User
+from db.models import User, Notification,Driver,Order
 from db.session import get_db
 from sqlalchemy.orm import Session
 from core.security import get_password_hash
@@ -69,12 +69,22 @@ def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # 1️⃣ Fetch the user
     db_user = db.query(User).filter(User.id == user_id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # 2️⃣ Delete dependent rows manually
+    db.query(Notification).filter(Notification.user_id == user_id).delete(synchronize_session=False)
+    db.query(Order).filter(Order.user_id == user_id).delete(synchronize_session=False)
+    db.query(Driver).filter(Driver.user_id == user_id).delete(synchronize_session=False)
+    db.commit()
+
+    # 3️⃣ Delete the user
     db.delete(db_user)
     db.commit()
-    return {"detail": "User deleted"}
+
+    return {"detail": "User and all related data deleted successfully"}
 
 @router.get("/", response_model=list[UserRead])
 def read_users(

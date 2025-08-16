@@ -77,7 +77,7 @@ def create_payment_intent(payload, user_id, order_id, amount_cents):
     )
 
 
-def initialize_paystack_transaction(payload, user_id, order_id, amount_cents):
+def initialize_paystack_transaction(payload, user_id, order_id, amount_cents,reference):
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type": "application/json"
@@ -87,7 +87,7 @@ def initialize_paystack_transaction(payload, user_id, order_id, amount_cents):
         "email": payload.email,
         "amount": amount_cents,  # Paystack expects amount in cents
         "currency": "ZAR",
-        "reference": f"ORDER_{order_id}_{user_id}",
+        "reference": reference,
         "metadata": {
             "user_id": str(user_id),
             "order_id": str(order_id),

@@ -60,7 +60,7 @@ async def create_checkout_session(
                 "payment_url": None
             }
         else:
-            init = initialize_paystack_transaction(payload, current_user.id, order.id, amount_cents)
+            init = initialize_paystack_transaction(payload, current_user.id, order.id, amount_cents, order.order_number)
             logger.critical(init)
             response = {
                 'order_id': order.id,
